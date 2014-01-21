@@ -169,7 +169,6 @@ evalALERT <- function(data, firstMonth, lag, minWeeks, minPercent, allThresholds
     ## create test matrix
     eval.dat <- matrix(data=0, nrow=0, ncol=10)
     
-    
     ## get years where we have data for firstMonth
     years <- unique(year(data[month(data$Date)==firstMonth, "Date"]))
     ## create a list where each element of the list contains the indices for rows from that season.
@@ -203,6 +202,33 @@ evalALERT <- function(data, firstMonth, lag, minWeeks, minPercent, allThresholds
     bbb <- c("Mean", mean(eval.dat$threshold), mean(eval.dat$tot.cases), mean(eval.dat$duration), mean(eval.dat$ALERT.cases), mean(eval.dat$ALERT.cases.pct), mean(eval.dat$peak.captured), mean(eval.dat$peak.ext.captured), mean(eval.dat$low.weeks.incl), mean(eval.dat$duration.diff))
     eval.dat <- rbind.data.frame(eval.dat, bbb)
     return(eval.dat)
+}
+
+#' The multiruleALERT function uses evalALERT on a vector of rules to help determine each 
+#'
+#' @param data the historical data to use in the analysis
+#' @param firstMonth month number which is counted as the first month of the 'flu year' 
+#' @param lag lag time between report date and action taken
+#' @param minWeeks minimum number of weeks to be in ALERT
+#' @param minPercent vector that specifies the minimum percent of cases to be captured by ALERT. This enables automated threshold selection.
+#' @param allThresholds If TRUE, all integer threshold values between the 10th and 50th percentile are examined. If FALSE, only the 10th, 20th, 30th, 40th, and 50th percentiles are examined.
+#' @param k the number of weeks around the peak to evaluate ALERT coverage for
+multiruleALERT <- function(data, firstMonth, lag, minWeeks, minPercent, allThresholds, k) {
+    ## check for correct column headers
+    if( !("Date" %in% colnames(data)) | !("Cases" %in% colnames(data)) )
+        stop("Data needs Date and Cases columns.")
+    
+    ## create test matrix
+    mr.dat <- matrix(data=0, nrow=0, ncol=10)
+    for(i in 1:length(minPercent)){
+        one.rule <- evalALERT(data, firstMonth, lag, minWeeks, minPercent[i], 
+                         allThresholds, k)
+        aaa <- one.rule[length(one.rule[,1]),]
+        aaa[1,1] <- minPercent[i]
+        colnames(aaa)[1] <- "minPercent"
+        mr.dat <- rbind.data.frame(mr.dat,aaa)
+    }
+    return(mr.dat)
 }
 
 #' The postcastALERT function is meant to be called from within the applyALERT function and is used to find the optimal window of time that contains a given percentage of cases.
