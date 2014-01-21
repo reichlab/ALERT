@@ -1,0 +1,116 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper, top=1in, left=1in, right=1in, bottom=1in]{geometry}
+\usepackage{multicol}
+
+\title{Technical details and implementation of the ALERT algorithm}
+\author{Nicholas G Reich et al. \\  (full author list TBD)}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction to the ALERT algorithm}
+In this document we examine and describe the utility of the ``The Above Local Elevated Respiratory illness Threshold'' (ALERT) algorithm in prospectively determining the start and end to a period of elevated influenza incidence in a community. This algorithm could provide a valuable tool to communities, schools, hospitals and other institutions looking for a simple method to objectively define a period when, for example, enhanced patient contact precautions, increased office visits, or other prevention measures should be implemented. The ALERT algorithm is a simple metric that can be simply operationalized and is not meant to be a sophisticated prediction model for influenza. 
+
+The ALERT algorithm uses current and prior flu season information to determine an ALERT threshold. The ALERT period begins when the reported number of laboratory-confirmed cases for a given week exceeds the established ALERT threshold. This serves as the flu season trigger, signaling larger than expected fluctuations. To account for reporting delays and possible delays in implementation of any policies, the user may specify a lag period: a number of days between the reporting date associated with the trigger and the date the ALERT period should be put into effect. The ALERT period ends when the reported number of cases falls below the same threshold, after a minimum passage of eight weeks. (This grace period is chosen by default to be eight weeks but its duration can be by the user.) 
+
+The ALERT algorithm can be implemented either via the ALERT R package, or an Excel spreadsheet. The R package contains some features that the spreadsheet does not. Namely, computation of a more complete set of metrics for the possible thresholds and the cross-validation procedure that can be used to evaluate different decision rules for choosing a threshold. 
+
+This document describes the ALERT algorithm in detail and provides example R code and output. 
+
+\subsection*{Ways to use the ALERT algorithm in practice}
+There are two ways one can use the ALERT algorithm to determine a threshold in practice. 
+
+\begin{itemize}
+\item {\bf The simpleALERT algorithm} This first method is simple, straightforward, and can be accomplished using the Excel spreadsheet or the R package. To choose a threshold using this method, you use one of the ALERT tools to create a table of historical performance of ALERT thresholds. You then choose the threshold that appears to perform the best, as measured by the calculated performance metrics. This method provides simple way to obtain a threshold, but does not provide a statistically robust assessment of future performance. 
+\item {\bf The robustALERT algorithm} This second method requires one to use the ALERT R package and to pre-specify a set of decision rules any of which could choose an acceptable threshold. The rules are evaluated prospectively via a leave-one-season-out cross-validation algorithm. The rule that has optimal performance is chosen. Then the historical performance of all thresholds are computed and the optimal rule is applied to choose a threshold. 
+\end{itemize}
+
+\section{Methodological details for the ALERT algorithm}
+
+The ALERT algorithm performs two distinct tasks. It can
+\begin{enumerate}
+\item calculate the historical performance of possible ALERT thresholds, thereby providing the information needed to choose an appropriate threshold, and
+\item evaluate the prospective performance of the ALERT algorithm under one or more threshold decision rules.
+\end{enumerate}
+Each of these steps is discussed in more detail in the subsequent sections. 
+
+
+\subsection*{Calculating historical performance of possible ALERT thresholds}
+To define the ALERT period, we use past surveillance data to evaluate the retrospective performance of possible thresholds. The ALERT algorithm defaults to choosing potential thresholds as the 10th, 20th, 30th, 40th, and 50th percentiles of all of the non-zero historical weekly case counts. In the R implementation of the ALERT algorithm, this can be specified as all integer thresholds between the 10th and 50th percentile. 
+
+For each threshold considered, the ALERT algorithm summarizes data from previous years as if that threshold had been applied. Say that we have historical data on $N$ seasons. Let $X_{i,t}$ be the percentage of cases captured in the ALERT period for season $i$ ($i$ = 1, ..., $N$) and threshold $t$. Let $D_{i,t}$ be the duration of the ALERT period for season $i$ and threshold $t$. For each threshold considered, the ALERT algorithm calculates and reports the following metrics:
+\begin{enumerate}
+        \item Across all seasons, the average percentage of all influenza cases contained within the ALERT period, $\bar X_t = \frac{\sum_i X_{i,t}}{N}$. 
+        \item The minimum, maximum, and sd of the percentage of all influenza cases contained within the ALERT period.
+        \item The average ALERT period duration, $\bar D_t = \frac{\sum_i D_{i,t}}{N}$.
+        \item The fraction of seasons in which the ALERT period contained the peak week.
+        \item The fraction of seasons in which the ALERT period contained the peak week $+/- k$ weeks ($k$ is specified by the user).
+        \item The average number of weeks included in the ALERT period with counts less than the threshold.
+        \item The average difference between, for each season, the duration of the ALERT period and the duration of the shortest period needed to capture $P$ percent of cases for that season. (This metric requires a bit more computation time, and is only computed if the user specifies a $P$.)  
+\end{enumerate}
+
+[[Describe R function {\tt createALERT()}.]]
+
+Looking at the historical performance metrics can provde a useful snapshot of the performance of different thresholds. In many settings, this may provide enough information to choose a threshold for use in the future. However, on its own, evaluating the past performance of these thresholds is not a statistically robust way to predict the future performance of a given threshold. 
+
+\subsection*{Evaluating the prospective performance of the ALERT algorithm}
+In practice, it is difficult to automate the selection of an optimal threshold, as the factors that determine an `optimal' threshold vary by setting. For example, in one setting, limiting the expected duration of the ALERT period may be very important to keep costs down. In another setting, duration may not play a factor and it is more important to capture a specific fraction of all cases each year.
+
+Therefore, it is vital for users of the robustALERT algorithm to state clearly what criteria they will use to choose a rule. Here are some examples:
+\begin{itemize}
+        \item{\em  We are interested in the highest threshold that has historically captured on average over 85\% of cases.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 6 cases.
+        \item {\em We want the lowest threshold that has had an average duration of less than 12 weeks.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 5 cases.
+        \item {\em We would like a threshold that has historically captured the peak and the two weeks on either side at least 80\% of the time.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 3 cases.
+\end{itemize}
+
+Given a decision rule such as any of the above, the ALERT algorithm will be able to find an optimal rule. In absence of such a decision rule, a user would make a subjective decision about the best threshold, based on the results shown. Additionally, given a set of decision rules, the robustALERT algorithm can provide statistically cross-validated measures of expected future performance of thresholds chosen using a particular rule.  
+
+To evaluate a particular rule, the ALERT algorithm performs the {\tt evalALERTRule} routine, which conducts the following steps for each season $i$:
+\begin{itemize}
+\item Create a dataset that includes all seasons except season $i$. We will refer to the included seasons as the ``training seasons''.
+\item Run the {\tt createALERT()} function to calculate the performance of potential thresholds across the `training seasons.'
+\item Choose the best threshold $t$ based on the rule provided.
+\item Run the {\tt applyALERT()} function using season $i$ and threshold $t$.
+\item Save the ALERT performance metrics for season $i$.
+\end{itemize}
+
+To run the robustALERT algorithm, one follows the following steps:
+\begin{itemize}
+\item For each rule considered, run {\tt evalALERTRule}.
+\item Choose the rule that has the best performance.
+\item Use the {\tt createALERT} routine to determine historical performance of a range of thresholds.
+\item Apply the chosen rule to the output from {\tt createALERT} to choose a threshold to use prospectively.
+\end{itemize}
+
+
+\section{An implementation of the simpleALERT algorithm}
+
+The following code loads the code to run ALERT, loads a test set of data, and computes the ALERT algorithm metrics on historical data.
+<<setup, cache=TRUE>>=
+source("~/Documents/work/research/maskStudy/manuscripts/ALERT/alertCode/code/ALERT.R")
+load("~/Documents/work/research/maskStudy/manuscripts/ALERT/alertCode/code/ALERT_test_data.rda")
+tmp <- createALERT(subset(data, Date<as.Date("2011-08-14")), 
+                   allThresholds=TRUE, k=2, firstMonth=8, target.pct=.85)
+@
+
+Table \ref{tab:results} shows slightly reformatted results from the {\tt tmp\$out} object, showing the historical performance of different thresholds.
+<<MyLaTeXT1Caption, echo = FALSE, results='asis', message=FALSE>>=
+require(xtable)
+colnames(tmp$out) <- c("threshold", "avg dur", "mean", "min", "max", "sd", "peaks", "peaks+/-k", "low weeks", "diff" )
+print(xtable(tmp$out, caption ="Printed table of the tmp\\$out object.", 
+             label = 'tab:results'),
+      caption.placement="top", include.rownames=FALSE, 
+      add.to.row=list(pos=list(-1), command="&&\\multicolumn{4}{c}{\\% of cases captured}&\\multicolumn{2}{c}{\\% captured}&& \\\\ \\cline{3-6} \\cline{7-8}"),
+      hline.after=c(0, nrow(tmp$out)))
+@
+
+[[Add code showing application of a threshold to the two left-out years.]]
+
+\section{An implementation of the robustALERT algorithm}
+
+
+\end{document}
