@@ -3,7 +3,7 @@
 \usepackage{multicol}
 
 \title{Technical details and implementation of the ALERT algorithm}
-\author{Nicholas G Reich et al. \\  (full author list TBD)}
+\author{Nicholas G Reich, Stephen A Lauer et al. \\  (full author list TBD)}
 
 \usepackage{setspace}
 \onehalfspacing
@@ -13,9 +13,9 @@
 \maketitle
 
 \section{Introduction to the ALERT algorithm}
-In this document we examine and describe the utility of the ``The Above Local Elevated Respiratory illness Threshold'' (ALERT) algorithm in prospectively determining the start and end to a period of elevated influenza incidence in a community. This algorithm could provide a valuable tool to communities, schools, hospitals and other institutions looking for a simple method to objectively define a period when, for example, enhanced patient contact precautions, increased office visits, or other prevention measures should be implemented. The ALERT algorithm is a simple metric that can be simply operationalized and is not meant to be a sophisticated prediction model for influenza. 
+In this document we examine and describe the utility of the ``Above Local Elevated Respiratory illness Threshold'' (ALERT) algorithm in prospectively determining the start and end to a period of elevated influenza incidence in a community. This algorithm could provide a valuable tool to communities, schools, hospitals and other institutions looking for a simple method to objectively define a period when, for example, enhanced patient contact precautions, increased office visits, or other prevention measures should be implemented. The ALERT algorithm is a simple metric that can be simply operationalized and is not meant to be a sophisticated prediction model for influenza. 
 
-The ALERT algorithm uses current and prior flu season information to determine an ALERT threshold. The ALERT period begins when the reported number of laboratory-confirmed cases for a given week exceeds the established ALERT threshold. This serves as the flu season trigger, signaling larger than expected fluctuations. To account for reporting delays and possible delays in implementation of any policies, the user may specify a lag period: a number of days between the reporting date associated with the trigger and the date the ALERT period should be put into effect. The ALERT period ends when the reported number of cases falls below the same threshold, after a minimum passage of eight weeks. (This grace period is chosen by default to be eight weeks but its duration can be by the user.) 
+The ALERT algorithm uses current and prior flu season information to determine an ALERT threshold. The ALERT period begins when the reported number of laboratory-confirmed cases for a given week exceeds the established ALERT threshold. This serves as the flu season trigger, signaling larger than expected fluctuations. To account for reporting delays and possible delays in implementation of any policies, the user may specify a lag period: a number of days between the reporting date associated with the trigger and the date the ALERT period should be put into effect. The ALERT period ends when the reported number of cases falls below the same threshold, after a minimum passage of eight weeks. (This grace period is chosen by default to be eight weeks but its duration can be modified by the user.) 
 
 The ALERT algorithm can be implemented either via the ALERT R package, or an Excel spreadsheet. The R package contains some features that the spreadsheet does not. Namely, computation of a more complete set of metrics for the possible thresholds and the cross-validation procedure that can be used to evaluate different decision rules for choosing a threshold. 
 
@@ -90,9 +90,11 @@ To run the robustALERT algorithm, one follows the following steps:
 \section{An implementation of the simpleALERT algorithm}
 
 The following code loads the code to run ALERT, loads a test set of data, and computes the ALERT algorithm metrics on historical data.
-<<setup, cache=TRUE>>=
-source("~/Documents/work/research/maskStudy/manuscripts/ALERT/alertCode/code/ALERT.R")
-load("~/Documents/work/research/maskStudy/manuscripts/ALERT/alertCode/code/ALERT_test_data.rda")
+<<setup>>=
+source("../R/ALERT.R")
+load("../R/ALERT_test_data.rda")
+@
+<<simple, cache=TRUE>>=
 tmp <- createALERT(subset(data, Date<as.Date("2011-08-14")), 
                    allThresholds=TRUE, k=2, firstMonth=8, target.pct=.85)
 @
@@ -112,5 +114,22 @@ print(xtable(tmp$out, caption ="Printed table of the tmp\\$out object.",
 
 \section{An implementation of the robustALERT algorithm}
 
+<<robust, cache=TRUE>>=
+tmp2 <- robustALERT(subset(data, Date<as.Date("2011-08-14")), allThresholds=TRUE, k=2,
+                   firstMonth=8, lag=7, minWeeks=8, minPercent=c(.8, .85, .9),
+                   maxDuration=c(12, 13, 14))
+@
+
+Table \ref{tab:robust} shows slightly reformatted results from the {\tt tmp2} object, showing the historical performance of different thresholds.
+<<MyLaTeXT2Caption, echo = FALSE, results='asis', message=FALSE>>=
+require()
+colnames(tmp2) <- c("rule", "thresh", "total cases", "dur", "ALERT cases", "%", "peaks", "peaks+/-k", "low weeks", "diff" )
+print(xtable(tmp2, caption ="Printed table of the tmp2 object.", 
+             label = 'tab:robust'),
+      caption.placement="top", include.rownames=FALSE,
+      #add.to.row=list(pos=list(-1), command="&\\multicolumn{4}{c}{average}&\\multicolumn{3}{c}{\\% captured}&& \\\\ \\cline{2-5} \\cline{6-8}"),
+      #align=c("l","p\{3cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}"),
+      hline.after=c(0, nrow(tmp2)))
+@
 
 \end{document}
