@@ -65,12 +65,12 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRU
         details[[i]] <- tmp
         out[i,"threshold"] <- thresholds[i] ## threshold used
         out[i,"mean.dur"] <- mean(tmp[,"duration"], na.rm=TRUE) ## mean duration
-        out[i,"mean.pct.cases.captured"] <- mean(tmp[,"ALERT.cases.pct"], na.rm=TRUE) ## mean % of cases captured
-        out[i,"min.pct.cases.captured"] <- min(tmp[,"ALERT.cases.pct"], na.rm=TRUE) ## min % of cases captured
-        out[i,"max.pct.cases.captured"] <- max(tmp[,"ALERT.cases.pct"], na.rm=TRUE) ## max % of cases captured
-        out[i,"sd.pct.cases.captured"] <- sd(tmp[,"ALERT.cases.pct"], na.rm=TRUE) ## sd % of cases captured
-        out[i,"pct.peaks.captured"] <- sum(tmp[,"peak.captured"])/nrow(tmp) ## % of times peak captured
-        out[i,"pct.ext.peaks.captured"] <- sum(tmp[,"peak.ext.captured"])/nrow(tmp) ## % of times peak +/- k weeks captured
+        out[i,"mean.pct.cases.captured"] <- round(100*mean(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## mean % of cases captured
+        out[i,"min.pct.cases.captured"] <- round(100*min(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## min % of cases captured
+        out[i,"max.pct.cases.captured"] <- round(100*max(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## max % of cases captured
+        out[i,"sd.pct.cases.captured"] <- round(100*sd(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## sd % of cases captured
+        out[i,"pct.peaks.captured"] <- round(100*sum(tmp[,"peak.captured"])/nrow(tmp),1) ## % of times peak captured
+        out[i,"pct.ext.peaks.captured"] <- round(100*sum(tmp[,"peak.ext.captured"])/nrow(tmp),1) ## % of times peak +/- k weeks captured
         out[i,"mean.low.weeks.incl"] <- mean(tmp[,"low.weeks.incl"], na.rm=TRUE)
         if(!is.null(target.pct)) out[i,"mean.duration.diff"] <- mean(tmp[,"duration.diff"], na.rm=TRUE)
     }
@@ -193,7 +193,10 @@ evalALERT <- function(data, firstMonth, lag, minWeeks, target.pct=NULL, allThres
             output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, k=k, target.pct=minPercent)$out)
             output1 <- subset(output, mean.pct.cases.captured>minPercent)
             ## find largest threshold that achieves target percent covered
-            if(length(output1[,1])==0) next # skips any years where target percentage is not achieved
+            if(length(output1[,1])==0){
+                print(paste0("The average captured percentage for each threshold in the year ", years[j], " fell below the minimum percentage of ", minPercent, "."))
+                next # skips any years where target percentage is not achieved
+            }
             opt.thresh <- max(output1$threshold)
             ## run applyALERT on left out year with threshold determined above
             if(max(data[idxs[[j]],2])<opt.thresh) next # skips any years where threshold is not achieved (usually partial season at beginning or end of data)
@@ -215,7 +218,10 @@ evalALERT <- function(data, firstMonth, lag, minWeeks, target.pct=NULL, allThres
             output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, k=k, target.pct=target.pct)$out)
             output1 <- subset(output, mean.dur<maxDuration)
             ## find smallest threshold that has a duration shorter than maxDuration
-            if(length(output1[,1])==0) next # skips any years where all durations are too long
+            if(length(output1[,1])==0){
+                print(paste("The average durations for each threshold in the year", years[j], "exceeded", maxDuration, "weeks."))
+                next # skips any years where all durations are too long
+            }
             opt.thresh <- min(output1$threshold)
             ## run applyALERT on left out year with threshold determined above
             if(max(data[idxs[[j]],2])<opt.thresh) next # skips any years where threshold is not achieved (usually partial season at beginning or end of data)
@@ -278,7 +284,9 @@ robustALERT <- function(data, firstMonth, lag, minWeeks, target.pct=NULL, allThr
             robust.dat <- rbind.data.frame(robust.dat,aaa)
         }
     }
-    robust.dat[,6] <- round(as.numeric(robust.dat[,6]),3)
+    robust.dat[,6] <- round(100*as.numeric(robust.dat[,6]),0)
+    robust.dat[,7] <- round(100*as.numeric(robust.dat[,7]),1)
+    robust.dat[,8] <- round(100*as.numeric(robust.dat[,8]),1)
     return(robust.dat)
 }
 

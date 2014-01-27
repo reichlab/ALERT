@@ -97,14 +97,15 @@ load("../R/ALERT_test_data.rda")
 <<simple, cache=TRUE>>=
 tmp <- createALERT(subset(data, Date<as.Date("2011-08-14")), 
                    allThresholds=TRUE, k=2, firstMonth=8, target.pct=.85)
+out <- as.data.frame(tmp$out)
 @
 
 Table \ref{tab:results} shows slightly reformatted results from the {\tt tmp\$out} object, showing the historical performance of different thresholds.
 <<MyLaTeXT1Caption, echo = FALSE, results='asis', message=FALSE>>=
 require(xtable)
-colnames(tmp$out) <- c("threshold", "avg dur", "mean", "min", "max", "sd", "peaks", "peaks+/-k", "low weeks", "diff" )
-print(xtable(tmp$out, caption ="Printed table of the tmp\\$out object.", 
-             label = 'tab:results'),
+colnames(out) <- c("threshold", "avg dur", "mean", "min", "max", "sd", "peaks", "peaks+/-k", "low weeks", "diff" )
+print(xtable(out, caption ="Printed table of the tmp\\$out object.", 
+             label = 'tab:results', digits=1), 
       caption.placement="top", include.rownames=FALSE, 
       add.to.row=list(pos=list(-1), command="&&\\multicolumn{4}{c}{\\% of cases captured}&\\multicolumn{2}{c}{\\% captured}&& \\\\ \\cline{3-6} \\cline{7-8}"),
       hline.after=c(0, nrow(tmp$out)))
@@ -120,12 +121,11 @@ tmp2 <- robustALERT(subset(data, Date<as.Date("2011-08-14")), allThresholds=TRUE
                    maxDuration=c(12, 13, 14))
 @
 
-Table \ref{tab:robust} shows slightly reformatted results from the {\tt tmp2} object, showing the historical performance of different thresholds.
+Table \ref{tab:robust} shows slightly reformatted results from the {\tt tmp2} object, showing the mean cross-validated results of different rules.
 <<MyLaTeXT2Caption, echo = FALSE, results='asis', message=FALSE>>=
-require()
 colnames(tmp2) <- c("rule", "thresh", "total cases", "dur", "ALERT cases", "%", "peaks", "peaks+/-k", "low weeks", "diff" )
 print(xtable(tmp2, caption ="Printed table of the tmp2 object.", 
-             label = 'tab:robust'),
+             label = 'tab:robust', digits=1),
       caption.placement="top", include.rownames=FALSE,
       #add.to.row=list(pos=list(-1), command="&\\multicolumn{4}{c}{average}&\\multicolumn{3}{c}{\\% captured}&& \\\\ \\cline{2-5} \\cline{6-8}"),
       #align=c("l","p\{3cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}"),
