@@ -1,21 +1,69 @@
-#' Core ALERT functions.
-#' Nicholas Reich, Stephen Lauer
-#' January 2014
+#' Masked ALERT test data
+#' 
+#' Weekly influenza cases from a hospital
+#' 
+#' @name maskData
+#' @docType data
+#' @format A weekly time series.
+#' @references %% ~~ possibly secondary sources and usages ~~
+#' @source %% ~~ reference to a publication or URL from which the data were
+#' obtained ~~
+#' @keywords maskData
+#' @examples
+#' 
+#' data(maskData)
+#' 
+#' ## project the proper start date for the upcoming flu season
+#' createALERT(data=maskData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
+#' 
+#' ## cross validate the above projection
+#' robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=maskData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
+#' 
+data(maskData)
 
-require(lubridate)
 
-#' The createALERT function calculates the ALERT thresholds table given data and other parameters.
-#' @param data the historical data to use in the analysis. A data.frame with a "Date" column (must be Date objects) and a  "Cases" column.
+#' Producing the ALERT thresholds table
+#' 
+#' The \code{createALERT} function calculates the ALERT thresholds table given data and other parameters.
+#' 
+#' @aliases createALERT
+#' @param data the historical data to use in the analysis. A data frame with a 'Date' column (must be \code{Date} objects) and a 'Cases' column.
 #' @param firstMonth month number which is counted as the first month of the 'flu year' 
 #' @param lag lag time in days between date of cases and action taken
 #' @param minWeeks minimum number of weeks to be in ALERT
-#' @param allThresholds If TRUE, all integer threshold values between the 10th and 50th percentile are examined. If FALSE, only the 10th, 20th, 30th, 40th, and 50th percentiles are examined.
-#' @param k if not NULL, the number of weeks around the peak to evaluate ALERT coverage for
-#' @param target.pct optional, can specify the percentage of cases the user is targeting during the ALERT period
-
+#' @param allThresholds if \code{TRUE}, all integer threshold values between the 10th and 50th percentile are examined. If \code{FALSE}, only the 10th, 20th, 30th, 40th, and 50th percentiles are examined.
+#' @param k the number of weeks around the peak to evaluate ALERT coverage for
+#' @param target.pct the percentage of cases the user is targeting during the ALERT period (optional)
+#' @return By utilizing the \code{\link{applyALERT}} function, \code{createALERT} uses prior hospital data to prospectively determine the start and end to a period of elevated influenza incidence in a community.
 #' 
-#' @return A matrix summarizing the performance of different ALERT thresholds on the given data. Each row represents a threshold. The columns correspond to (1) threshold used, (2) mean ALERT duration, (3/4/5/6) mean/minimum/maximum/sd of % of cases captured across seasons.
-createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
+#' \code{createALERT()$details} creates a list of matrices. Each matrix contains raw statistics for the performance of a threshold for each flu season in \code{data} (these statistics can be found in \code{\link{applyALERT})}.
+#' 
+#' \code{createALERT()$out} produces a matrix summarizing the performance of different ALERT thresholds. The columns for this matrix are as follows:
+#' \item{threshold }{the minimum threshold number of cases needed to begin the ALERT period}
+#' \item{mean.dur }{the mean ALERT period duration in weeks}
+#' \item{mean.pct.cases.captured }{across all seasons, the average percentage of all influenza cases contained within the ALERT period}
+#' \item{min.pct.cases.captured }{the minimum percentage of annual cases captured during the ALERT period in any season}
+#' \item{max.pct.cases.captured }{the maximum percentage of annual cases captured during the ALERT period in any season}
+#' \item{sd.pct.cases.captured }{the standard deviation of the percentage of annual cases captured during the ALERT period}
+#' \item{pct.peaks.captured }{the percentage of seasons in which the ALERT period contained the peak week}
+#' \item{pct.ext.peaks.captured }{the percentage of seasons in which the ALERT period contained the peak week +/- \code{k} weeks}
+#' \item{mean.low.weeks.incl }{the average number of weeks included in the ALERT period with counts less than \code{threshold}}
+#' \item{mean.duration.diff }{if \code{target.pct} specified, the average difference between the duration of the ALERT period in a season and the duration of the shortest period needed to capture \code{target.pct} of cases for that season}
+#' @note %% ~~further notes~~
+#' @author Nicholas G Reich and Stephen A Lauer
+#' @seealso \code{\link{evalALERT}} cross-validates ALERT data over a rule
+#' 
+#' \code{\link{robustALERT}} cross-validates ALERT data over a series of rules
+#' @references %% ~put references to the literature/web site here ~
+#' @keywords createALERT
+#' @examples
+#' 
+#' ## Find the ALERT thresholds table for maskData over all thresholds
+#' data(maskData)
+#' x <- createALERT(data=maskData, allThresholds=TRUE, k=2, target.pct=0.85)
+#' x$out
+
+createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FALSE, k=0, target.pct=NULL) {
     ## check for correct column headers
     if( !("Date" %in% colnames(data)) | !("Cases" %in% colnames(data)) )
         stop("data needs Date and Cases columns.")
@@ -33,7 +81,7 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRU
     nonZeroCaseCounts <- data$Cases[which(data$Cases>0)]
     if(allThresholds){
         tmp <- quantile(nonZeroCaseCounts, probs=c(.1, .5))
-        thresholds <- unique(seq(tmp[1], tmp[2], by=1))
+        thresholds <- unique(seq(ceiling(tmp[1]), tmp[2], by=1))
     } else {
         thresholds <- unique(quantile(nonZeroCaseCounts, probs=seq(.1, .5, by=.1)))
     }
@@ -77,24 +125,41 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRU
     return(list(out=out, details=details))
 }
 
-#' The applyALERT function takes one year of data and a threshold and calculates metrics.
+#' Producing seasonal ALERT output
+#' 
+#' The \code{applyALERT} function (often called by \code{\link{createALERT}} or \code{\link{evalALERT}}) takes one year of data and a threshold and calculates metrics.
+#' 
+#' @aliases applyALERT
 #' @param data a single season of surveillance data
-#' @param threshold the ALERT treshold to apply
-#' @param k if not NULL, the number of weeks around the peak to evaluate ALERT coverage for
+#' @param threshold the ALERT threshold to apply
+#' @param k the number of weeks around the peak to evaluate ALERT coverage for
 #' @param lag lag time in days between report date and action taken
 #' @param minWeeks minimum number of weeks to be in ALERT
-#' @param target.pct optional, can specify the percentage of cases the user is targeting during the ALERT period
-#' @param plot TRUE/FALSE, whether a plot should be generated
+#' @param target.pct the percentage of cases the user is targeting during the ALERT period (optional)
+#' @param plot \code{TRUE}/\code{FALSE}, whether a plot should be generated (currently unavailable)
 #' 
-#' @return Vector with the following elements: 
-#'      [1] total number of cases for the season, 
-#'      [2] duration of the ALERT period
-#'      [3] total number of cases in the ALERT period, 
-#'      [4] fraction of cases in the ALERT period, 
-#'      [5] 1 of peak was captured, 0 otherwise, 
-#'      [6] 1 if peak +/- k weeks captured, 0 otherwise, 
-#'      [7] 1 if counts rise above threshold for two consecutive weeks at any point after ALERT period, 0 otherwise. 
-applyALERT <- function(data, threshold, k=0, lag, minWeeks, target.pct=NULL, plot=FALSE) {
+#' @return Returns a vector with the following elements: 
+#'      \item{tot.cases }{total number of cases for the season} 
+#'      \item{duration }{duration of the ALERT period}
+#'      \item{ALERT.cases }{total number of cases in the ALERT period}
+#'      \item{ALERT.cases.pct }{fraction of cases in the ALERT period}
+#'      \item{peak.captured }{1 if peak was captured, 0 otherwise}
+#'      \item{peak.ext.captured }{1 if peak +/- \code{k} weeks captured, 0 otherwise}
+#'      \item{low.weeks.incl }{the number of weeks included in the ALERT period with counts less than \code{threshold}}
+#'      \item{duration.diff }{if \code{target.pct} specified, the difference between the duration of the ALERT period and the duration of the shortest period needed to capture \code{target.pct} using \code{\link{postcastALERT}}.}
+#'      
+#' @note %% ~~further notes~~
+#' @author Nicholas G Reich and Stephen A Lauer
+#' @seealso \code{\link{createALERT}}, \code{\link{evalALERT}}, \code{\link{robustALERT}}
+#' @references %% ~put references to the literature/web site here ~
+#' @keywords applyALERT
+#' @examples 
+#' 
+#' ## Find the ALERT metrics of a season with a threshold of 3
+#' data(maskData)
+#' applyALERT(data=maskData, threshold=3, k=2, target.pct=0.85)
+
+applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL, plot=FALSE) {
     ## find first week where ALERT is hit
     idxHitDate <- min(which(data$Cases>=threshold))
     hitDate <- data[idxHitDate,"Date"]
@@ -153,18 +218,47 @@ applyALERT <- function(data, threshold, k=0, lag, minWeeks, target.pct=NULL, plo
 }
 
 
-#' The evalALERT function takes a full dataset and parameters to both create and apply the ALERT algorithm. The parameter minPercent also enalbes automatic choice of threshold. For each season in the dataset, an ALERT threshold is calculated leaving that year out, then the resulting threshold is applied to that year. The metrics are saved and summarized.
-#'
-#' @param data the historical data to use in the analysis
+#' Cross-validating ALERT output under a rule
+#' 
+#' The \code{evalALERT} function uses the ALERT algorithm to test a rule (either \code{minPercent} or \code{maxDuration}) on hospital influenza data. For each season in the dataset, \code{\link{createALERT}} finds an optimal ALERT \code{threshold} when leaving that year out. Then \code{\link{applyALERT}} tests that \code{threshold} in that year. The metrics are saved and summarized.
+#' 
+#' @aliases evalALERT
+#' @param minPercent specify the minimum percent of cases to be captured on average by ALERT. This enables automated threshold selection.
+#' @param maxDuration specify the maximum number of weeks to be captured on average by ALERT. This enables automated threshold selection.
+#' @param data the historical data to use in the analysis. A data frame with a 'Date' column (must be \code{Date} objects) and a 'Cases' column.
 #' @param firstMonth month number which is counted as the first month of the 'flu year' 
 #' @param lag lag time between report date and action taken
 #' @param minWeeks minimum number of weeks to be in ALERT
-#' @param target.pct optional, can specify the percentage of cases the user is targeting during the ALERT period when testing maxDuration
-#' @param allThresholds If TRUE, all integer threshold values between the 10th and 50th percentile are examined. If FALSE, only the 10th, 20th, 30th, 40th, and 50th percentiles are examined.
+#' @param allThresholds if \code{TRUE}, all integer threshold values between the 10th and 50th percentile are examined. If \code{FALSE}, only the 10th, 20th, 30th, 40th, and 50th percentiles are examined.
 #' @param k the number of weeks around the peak to evaluate ALERT coverage for
-#' @param minPercent specify the minimum percent of cases to be captured on average by ALERT. This enables automated threshold selection.
-#' @param maxDuration specify the maximum number of weeks to be captured on average by ALERT. This enables automated threshold selection.
-evalALERT <- function(data, firstMonth, lag, minWeeks, target.pct=NULL, allThresholds, k=0, minPercent=NULL, maxDuration=NULL) {
+#' @param target.pct the percentage of cases the user is targeting during the ALERT period when testing \code{maxDuration} (optional)
+#' @return Returns a table with the following columns: 
+#'      \item{season }{each flu season in the \code{data} that was able to be evaluated for the given rule, with the final row reserved for "Mean"}
+#'      \item{threshold }{the minimum threshold number of cases needed to begin the ALERT period}
+#'      \item{tot.cases }{total number of cases for the season} 
+#'      \item{duration }{duration of the ALERT period}
+#'      \item{ALERT.cases }{total number of cases in the ALERT period}
+#'      \item{ALERT.cases.pct }{fraction of cases in the ALERT period}
+#'      \item{peak.captured }{1 if peak was captured, 0 otherwise}
+#'      \item{peak.ext.captured }{1 if peak +/- \code{k} weeks captured, 0 otherwise}
+#'      \item{low.weeks.incl }{the number of weeks included in the ALERT period with counts less than \code{threshold}}
+#'      \item{duration.diff }{if \code{target.pct} specified, the difference between the duration of the ALERT period and the duration of the shortest period needed to capture \code{target.pct} using \code{\link{postcastALERT}}.}
+#'      
+#' @note %% ~~further notes~~
+#' @author Nicholas G Reich and Stephen A Lauer
+#' @seealso \code{\link{robustALERT}} cross-validates ALERT output under a set of rules
+#' @references %% ~put references to the literature/web site here ~
+#' @keywords evalALERT
+#' @examples
+#' 
+#' ## find the highest threshold that has captured on average over 85% of cases
+#' data(maskData)
+#' evalALERT(minPercent=.85, data=maskData, k=2)
+#' 
+#' ## find the lowest threshold that has had an average duration of less than 12 weeks
+#' evalALERT(maxDuration=12, data=maskData, k=2)
+
+evalALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
     if(is.null(maxDuration) & is.null(minPercent))
         stop("Please choose a rule to evaluate, either with maxDuration or minPercent.")
     ## check for correct column headers
@@ -203,7 +297,7 @@ evalALERT <- function(data, firstMonth, lag, minWeeks, target.pct=NULL, allThres
             aaa <- applyALERT(data[idxs[[j]],], threshold=opt.thresh, k=k, lag=lag, 
                               minWeeks=minWeeks, target.pct=minPercent, plot=FALSE)
             ## store metrics
-            aaa <- c(year=years[j], threshold=opt.thresh, aaa)
+            aaa <- c(season=years[j], threshold=opt.thresh, aaa)
             eval.dat <- rbind.data.frame(eval.dat, aaa)
         }
         colnames(eval.dat) <- names(aaa)
@@ -228,28 +322,73 @@ evalALERT <- function(data, firstMonth, lag, minWeeks, target.pct=NULL, allThres
             aaa <- applyALERT(data[idxs[[j]],], threshold=opt.thresh, k=k, lag=lag, 
                               minWeeks=minWeeks, target.pct=target.pct, plot=FALSE)
             ## store metrics
-            aaa <- c(year=years[j], threshold=opt.thresh, aaa)
+            aaa <- c(season=years[j], threshold=opt.thresh, aaa)
             eval.dat <- rbind.data.frame(eval.dat, aaa)
         }
         colnames(eval.dat) <- names(aaa)
     }
     
     ## take averages of the metrics for final row
-    bbb <- c("Mean", mean(eval.dat$threshold), mean(eval.dat$tot.cases), mean(eval.dat$duration), mean(eval.dat$ALERT.cases), mean(eval.dat$ALERT.cases.pct), mean(eval.dat$peak.captured), mean(eval.dat$peak.ext.captured), mean(eval.dat$low.weeks.incl), mean(eval.dat$duration.diff))
+    bbb <- c("Mean", round(mean(eval.dat$threshold),1), 
+             round(mean(eval.dat$tot.cases),1), 
+             round(mean(eval.dat$duration),1), 
+             round(mean(eval.dat$ALERT.cases),1), 
+             round(mean(eval.dat$ALERT.cases.pct),3), 
+             round(mean(eval.dat$peak.captured),3), 
+             round(mean(eval.dat$peak.ext.captured),3), 
+             round(mean(eval.dat$low.weeks.incl),1), 
+             round(mean(eval.dat$duration.diff),1))
     eval.dat <- rbind.data.frame(eval.dat, bbb)
     return(eval.dat)
 }
 
-#' The robustALERT function uses evalALERT on a vector of rules to help determine each 
-#'
-#' @param data the historical data to use in the analysis
-#' @param firstMonth month number which is counted as the first month of the 'flu year' 
-#' @param lag lag time between report date and action taken
+#' Cross-validating ALERT over a set of rules.
+#' 
+#' The \code{robustALERT} function finds the optimal threshold for starting an ALERT season for a vector of rules. For each rule specified, \code{\link{evalALERT}} tests the rule against every flu season for the given \code{data} and outputs summary statistics. \code{robustALERT} aggregates these statistics together for easy comparison. This function can be used to validate the results from \code{\link{createALERT}}.
+#' 
+#' @aliases robustALERT
+#' @param minPercent value or vector that specifies the minimum percent of
+#' cases to be captured on average by ALERT. This enables automated threshold
+#' selection.
+#' @param maxDuration value or vector that specifies the maximum number of
+#' weeks to be captured on average by ALERT. This enables automated threshold
+#' selection.
+#' @param data the historical data to use in the analysis. A data.frame with a
+#' "Date" column (must be Date objects) and a "Cases" column.
+#' @param firstMonth firstMonth month number which is counted as the first
+#' month of the 'flu year'
+#' @param lag lag time in days between date of cases and action taken
 #' @param minWeeks minimum number of weeks to be in ALERT
-#' @param minPercent vector that specifies the minimum percent of cases to be captured by ALERT. This enables automated threshold selection.
-#' @param allThresholds If TRUE, all integer threshold values between the 10th and 50th percentile are examined. If FALSE, only the 10th, 20th, 30th, 40th, and 50th percentiles are examined.
-#' @param k the number of weeks around the peak to evaluate ALERT coverage for
-robustALERT <- function(data, firstMonth, lag, minWeeks, target.pct=NULL, allThresholds, k=0, minPercent=NULL, maxDuration=NULL) {
+#' @param allThresholds If TRUE, all integer threshold values between the 10th
+#' and 50th percentile are examined. If FALSE, only the 10th, 20th, 30th, 40th,
+#' and 50th percentiles are examined.
+#' @param k if not 0, the number of weeks around the peak to evaluate ALERT
+#' coverage for
+#' @param target.pct can specify the percentage of cases the user is targeting
+#' during the ALERT period when testing maxDuration (optional)
+#' @return A table of the average threshold and ALERT results determined by each rule with \code{\link{evalALERT}} with the following columns:
+#' \item{rule }{each rule that was specified by the user, either by \code{minPercent} or \code{maxDuration}}
+#'      \item{threshold }{the minimum threshold number of cases needed to begin the ALERT period}
+#'      \item{tot.cases }{total number of cases for the season} 
+#'      \item{duration }{duration of the ALERT period}
+#'      \item{ALERT.cases }{total number of cases in the ALERT period}
+#'      \item{ALERT.cases.pct }{fraction of cases in the ALERT period}
+#'      \item{peak.captured }{1 if peak was captured, 0 otherwise}
+#'      \item{peak.ext.captured }{1 if peak +/- \code{k} weeks captured, 0 otherwise}
+#'      \item{low.weeks.incl }{the number of weeks included in the ALERT period with counts less than \code{threshold}}
+#'      \item{duration.diff }{if \code{target.pct} specified, the difference between the duration of the ALERT period and the duration of the shortest period needed to capture \code{target.pct} using \code{\link{postcastALERT}}.}
+#' @note %% ~~further notes~~
+#' @author Nicholas G Reich and Stephen A Lauer
+#' @seealso \code{\link{createALERT}}
+#' @references %% ~put references to the literature/web site here ~
+#' @keywords robustALERT
+#' @examples
+#' 
+#' ## view the performance of ALERT over three levels of minimum case percentage and maximum duration length
+#' data(maskData)
+#' robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=maskData, k=2, target.pct=0.85)
+
+robustALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
     ## check for correct column headers
     if( !("Date" %in% colnames(data)) | !("Cases" %in% colnames(data)) )
         stop("Data needs Date and Cases columns.")
@@ -284,18 +423,31 @@ robustALERT <- function(data, firstMonth, lag, minWeeks, target.pct=NULL, allThr
             robust.dat <- rbind.data.frame(robust.dat,aaa)
         }
     }
-    robust.dat[,6] <- round(100*as.numeric(robust.dat[,6]),0)
+    robust.dat[,6] <- round(100*as.numeric(robust.dat[,6]),1)
     robust.dat[,7] <- round(100*as.numeric(robust.dat[,7]),1)
     robust.dat[,8] <- round(100*as.numeric(robust.dat[,8]),1)
     return(robust.dat)
 }
 
-#' The postcastALERT function is meant to be called from within the applyALERT function and is used to find the optimal window of time that contains a given percentage of cases.
+#' A component of applyALERT
 #' 
+#' The \code{postcastALERT} function is meant to be called from within the \code{applyALERT} function and is used to find the optimal window of time that contains a given percentage of cases.
+#' 
+#' @aliases postcastALERT
 #' @param data a single season of surveillance data
 #' @param target.pct specifies the percentage of cases the user is targeting during the ALERT period
 #' 
-#' @return A vector with two elements, the "pct.captured" and "duration" of the interval
+#' @return A vector with two elements, the \code{pct.captured} and \code{duration} of the interval
+#' 
+#' @note %% ~~further notes~~
+#' @author Nicholas G Reich and Stephen A Lauer
+#' @seealso \code{\link{applyALERT}}, \code{\link{createALERT}}
+#' @references %% ~put references to the literature/web site here ~
+#' @keywords postcastALERT
+#' @examples
+#' 
+#' data(maskData)
+#' postcastALERT(maskData, target.pct=.85)
 
 postcastALERT <- function(data, target.pct) {
     totalCases <- sum(data$Cases)
@@ -328,4 +480,4 @@ postcastALERT <- function(data, target.pct) {
 #' The plotALERT function can be called from the applyALERT function and is used to plot the details of the application of a single year of the ALERT algorithm to data.
 #' 
 #' @param data a single season of surveillance data
-#' @param threshold the ALERT treshold to apply
+#' @param threshold the ALERT threshold to apply

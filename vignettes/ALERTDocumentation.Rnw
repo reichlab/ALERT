@@ -12,6 +12,11 @@
 
 \maketitle
 
+%\VignetteIndexEntry{Using ALERT}
+%\VignetteDepends{ALERT, lubridate, xtable}
+%\VignetteKeywords{ALERT, applyALERT, createALERT, evalALERT, robustALERT, postcastALERT}
+%\VignetteEngine{knitr::knitr}
+
 \section{Introduction to the ALERT algorithm}
 In this document we examine and describe the utility of the ``Above Local Elevated Respiratory illness Threshold'' (ALERT) algorithm in prospectively determining the start and end to a period of elevated influenza incidence in a community. This algorithm could provide a valuable tool to communities, schools, hospitals and other institutions looking for a simple method to objectively define a period when, for example, enhanced patient contact precautions, increased office visits, or other prevention measures should be implemented. The ALERT algorithm is a simple metric that can be simply operationalized and is not meant to be a sophisticated prediction model for influenza. 
 
@@ -44,13 +49,13 @@ To define the ALERT period, we use past surveillance data to evaluate the retros
 
 For each threshold considered, the ALERT algorithm summarizes data from previous years as if that threshold had been applied. Say that we have historical data on $N$ seasons. Let $X_{i,t}$ be the percentage of cases captured in the ALERT period for season $i$ ($i$ = 1, ..., $N$) and threshold $t$. Let $D_{i,t}$ be the duration of the ALERT period for season $i$ and threshold $t$. For each threshold considered, the ALERT algorithm calculates and reports the following metrics:
 \begin{enumerate}
-        \item Across all seasons, the average percentage of all influenza cases contained within the ALERT period, $\bar X_t = \frac{\sum_i X_{i,t}}{N}$. 
-        \item The minimum, maximum, and sd of the percentage of all influenza cases contained within the ALERT period.
-        \item The average ALERT period duration, $\bar D_t = \frac{\sum_i D_{i,t}}{N}$.
-        \item The fraction of seasons in which the ALERT period contained the peak week.
-        \item The fraction of seasons in which the ALERT period contained the peak week $+/- k$ weeks ($k$ is specified by the user).
-        \item The average number of weeks included in the ALERT period with counts less than the threshold.
-        \item The average difference between, for each season, the duration of the ALERT period and the duration of the shortest period needed to capture $P$ percent of cases for that season. (This metric requires a bit more computation time, and is only computed if the user specifies a $P$.)  
+\item Across all seasons, the average percentage of all influenza cases contained within the ALERT period, $\bar X_t = \frac{\sum_i X_{i,t}}{N}$. 
+\item The minimum, maximum, and sd of the percentage of all influenza cases contained within the ALERT period.
+\item The average ALERT period duration, $\bar D_t = \frac{\sum_i D_{i,t}}{N}$.
+\item The fraction of seasons in which the ALERT period contained the peak week.
+\item The fraction of seasons in which the ALERT period contained the peak week $+/- k$ weeks ($k$ is specified by the user).
+\item The average number of weeks included in the ALERT period with counts less than the threshold.
+\item The average difference between, for each season, the duration of the ALERT period and the duration of the shortest period needed to capture $P$ percent of cases for that season. (This metric requires a bit more computation time, and is only computed if the user specifies a $P$.)  
 \end{enumerate}
 
 [[Describe R function {\tt createALERT()}.]]
@@ -62,9 +67,9 @@ In practice, it is difficult to automate the selection of an optimal threshold, 
 
 Therefore, it is vital for users of the robustALERT algorithm to state clearly what criteria they will use to choose a rule. Here are some examples:
 \begin{itemize}
-        \item{\em  We are interested in the highest threshold that has historically captured on average over 85\% of cases.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 6 cases.
-        \item {\em We want the lowest threshold that has had an average duration of less than 12 weeks.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 5 cases.
-        \item {\em We would like a threshold that has historically captured the peak and the two weeks on either side at least 80\% of the time.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 3 cases.
+\item{\em  We are interested in the highest threshold that has historically captured on average over 85\% of cases.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 6 cases.
+\item {\em We want the lowest threshold that has had an average duration of less than 12 weeks.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 5 cases.
+\item {\em We would like a threshold that has historically captured the peak and the two weeks on either side at least 80\% of the time.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 3 cases.
 \end{itemize}
 
 Given a decision rule such as any of the above, the ALERT algorithm will be able to find an optimal rule. In absence of such a decision rule, a user would make a subjective decision about the best threshold, based on the results shown. Additionally, given a set of decision rules, the robustALERT algorithm can provide statistically cross-validated measures of expected future performance of thresholds chosen using a particular rule.  
@@ -90,12 +95,12 @@ To run the robustALERT algorithm, one follows the following steps:
 \section{An implementation of the simpleALERT algorithm}
 
 The following code loads the code to run ALERT, loads a test set of data, and computes the ALERT algorithm metrics on historical data.
-<<setup>>=
-source("../R/ALERT.R")
-load("../R/ALERT_test_data.rda")
+<<setup, message=FALSE>>=
+library(ALERT)
+data(maskData)
 @
 <<simple, cache=TRUE>>=
-tmp <- createALERT(subset(data, Date<as.Date("2011-08-14")), 
+tmp <- createALERT(subset(maskData, Date<as.Date("2011-08-14")), 
                    allThresholds=TRUE, k=2, firstMonth=8, target.pct=.85)
 out <- as.data.frame(tmp$out)
 @
@@ -116,9 +121,9 @@ print(xtable(out, caption ="Printed table of the tmp\\$out object.",
 \section{An implementation of the robustALERT algorithm}
 
 <<robust, cache=TRUE>>=
-tmp2 <- robustALERT(subset(data, Date<as.Date("2011-08-14")), allThresholds=TRUE, k=2,
-                   firstMonth=8, lag=7, minWeeks=8, minPercent=c(.8, .85, .9),
-                   maxDuration=c(12, 13, 14))
+tmp2 <- robustALERT(subset(maskData, Date<as.Date("2011-08-14")), allThresholds=TRUE,
+                    k=2, firstMonth=8, lag=7, minWeeks=8, minPercent=c(.8, .85, .9),
+                    maxDuration=c(12, 13, 14))
 @
 
 Table \ref{tab:robust} shows slightly reformatted results from the {\tt tmp2} object, showing the mean cross-validated results of different rules.
