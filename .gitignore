@@ -3,6 +3,7 @@
 .RData
 *.Rproj
 vignettes/cache/*
+vignettes/figure/*
 vignettes/ALERTDocumentation-concordance.tex
 vignettes/ALERTDocumentation.tex
 vignettes/ALERTDocumentation.log
