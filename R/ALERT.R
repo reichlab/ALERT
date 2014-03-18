@@ -21,6 +21,20 @@
 #' 
 data(fluData)
 
+#' Saved output from robustALERT()
+#' 
+#' Summarized performance of multiple ALERT rules applied to the fluData dataset. 
+#' Desiged for quick loading for vignette.
+#' 
+#' @name alert_eval
+#' @docType data
+#' @format a data.frame
+#' @keywords alert_eval
+#' @examples
+#' 
+#' data(alert_eval)
+data(alert_eval)
+
 
 #' Producing the ALERT thresholds table
 #' 
@@ -223,9 +237,9 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
 #' The \code{evalALERT} function uses the ALERT algorithm to test a rule (either \code{minPercent} or \code{maxDuration}) on hospital influenza data. For each season in the dataset, \code{\link{createALERT}} finds an optimal ALERT \code{threshold} when leaving that year out. Then \code{\link{applyALERT}} tests that \code{threshold} in that year. The metrics are saved and summarized.
 #' 
 #' @aliases evalALERT
+#' @param data the historical data to use in the analysis. A data frame with a 'Date' column (must be \code{Date} objects) and a 'Cases' column.
 #' @param minPercent specify the minimum percent of cases to be captured on average by ALERT. This enables automated threshold selection.
 #' @param maxDuration specify the maximum number of weeks to be captured on average by ALERT. This enables automated threshold selection.
-#' @param data the historical data to use in the analysis. A data frame with a 'Date' column (must be \code{Date} objects) and a 'Cases' column.
 #' @param firstMonth month number which is counted as the first month of the 'flu year' 
 #' @param lag lag time between report date and action taken
 #' @param minWeeks minimum number of weeks to be in ALERT
@@ -258,7 +272,7 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
 #' ## find the lowest threshold that has had an average duration of less than 12 weeks
 #' evalALERT(maxDuration=12, data=fluData, k=2)
 
-evalALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
+evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
     if(is.null(maxDuration) & is.null(minPercent))
         stop("Please choose a rule to evaluate, either with maxDuration or minPercent.")
     ## check for correct column headers
@@ -347,14 +361,14 @@ evalALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag
 #' The \code{robustALERT} function finds the optimal threshold for starting an ALERT season for a vector of rules. For each rule specified, \code{\link{evalALERT}} tests the rule against every flu season for the given \code{data} and outputs summary statistics. \code{robustALERT} aggregates these statistics together for easy comparison. This function can be used to validate the results from \code{\link{createALERT}}.
 #' 
 #' @aliases robustALERT
+#' @param data the historical data to use in the analysis. A data.frame with a
+#' "Date" column (must be Date objects) and a "Cases" column.
 #' @param minPercent value or vector that specifies the minimum percent of
 #' cases to be captured on average by ALERT. This enables automated threshold
 #' selection.
 #' @param maxDuration value or vector that specifies the maximum number of
 #' weeks to be captured on average by ALERT. This enables automated threshold
 #' selection.
-#' @param data the historical data to use in the analysis. A data.frame with a
-#' "Date" column (must be Date objects) and a "Cases" column.
 #' @param firstMonth firstMonth month number which is counted as the first
 #' month of the 'flu year'
 #' @param lag lag time in days between date of cases and action taken
@@ -388,7 +402,7 @@ evalALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag
 #' data(fluData)
 #' robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=fluData, k=2, target.pct=0.85)
 
-robustALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
+robustALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
     ## check for correct column headers
     if( !("Date" %in% colnames(data)) | !("Cases" %in% colnames(data)) )
         stop("Data needs Date and Cases columns.")
