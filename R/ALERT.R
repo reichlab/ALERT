@@ -2,24 +2,24 @@
 #' 
 #' Weekly influenza cases from a hospital
 #' 
-#' @name maskData
+#' @name fluData
 #' @docType data
 #' @format A weekly time series.
 #' @references %% ~~ possibly secondary sources and usages ~~
 #' @source %% ~~ reference to a publication or URL from which the data were
 #' obtained ~~
-#' @keywords maskData
+#' @keywords fluData
 #' @examples
 #' 
-#' data(maskData)
+#' data(fluData)
 #' 
 #' ## project the proper start date for the upcoming flu season
-#' createALERT(data=maskData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
+#' createALERT(data=fluData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
 #' 
 #' ## cross validate the above projection
-#' robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=maskData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
+#' robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=fluData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
 #' 
-data(maskData)
+data(fluData)
 
 
 #' Producing the ALERT thresholds table
@@ -58,9 +58,9 @@ data(maskData)
 #' @keywords createALERT
 #' @examples
 #' 
-#' ## Find the ALERT thresholds table for maskData over all thresholds
-#' data(maskData)
-#' x <- createALERT(data=maskData, allThresholds=TRUE, k=2, target.pct=0.85)
+#' ## Find the ALERT thresholds table for fluData over all thresholds
+#' data(fluData)
+#' x <- createALERT(data=fluData, allThresholds=TRUE, k=2, target.pct=0.85)
 #' x$out
 
 createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FALSE, k=0, target.pct=NULL) {
@@ -156,8 +156,8 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
 #' @examples 
 #' 
 #' ## Find the ALERT metrics of a season with a threshold of 3
-#' data(maskData)
-#' applyALERT(data=maskData, threshold=3, k=2, target.pct=0.85)
+#' data(fluData)
+#' applyALERT(data=fluData, threshold=3, k=2, target.pct=0.85)
 
 applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL, plot=FALSE) {
     ## find first week where ALERT is hit
@@ -252,11 +252,11 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
 #' @examples
 #' 
 #' ## find the highest threshold that has captured on average over 85% of cases
-#' data(maskData)
-#' evalALERT(minPercent=.85, data=maskData, k=2)
+#' data(fluData)
+#' evalALERT(minPercent=.85, data=fluData, k=2)
 #' 
 #' ## find the lowest threshold that has had an average duration of less than 12 weeks
-#' evalALERT(maxDuration=12, data=maskData, k=2)
+#' evalALERT(maxDuration=12, data=fluData, k=2)
 
 evalALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
     if(is.null(maxDuration) & is.null(minPercent))
@@ -385,8 +385,8 @@ evalALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag
 #' @examples
 #' 
 #' ## view the performance of ALERT over three levels of minimum case percentage and maximum duration length
-#' data(maskData)
-#' robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=maskData, k=2, target.pct=0.85)
+#' data(fluData)
+#' robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=fluData, k=2, target.pct=0.85)
 
 robustALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
     ## check for correct column headers
@@ -446,8 +446,8 @@ robustALERT <- function(minPercent=NULL, maxDuration=NULL, data, firstMonth=9, l
 #' @keywords postcastALERT
 #' @examples
 #' 
-#' data(maskData)
-#' postcastALERT(maskData, target.pct=.85)
+#' data(fluData)
+#' postcastALERT(fluData, target.pct=.85)
 
 postcastALERT <- function(data, target.pct) {
     totalCases <- sum(data$Cases)

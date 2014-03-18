@@ -97,10 +97,10 @@ To run the robustALERT algorithm, one follows the following steps:
 The following code loads the code to run ALERT, loads a test set of data, and computes the ALERT algorithm metrics on historical data.
 <<setup, message=FALSE>>=
 library(ALERT)
-data(maskData)
+data(fluData)
 @
 <<simple, cache=TRUE>>=
-tmp <- createALERT(subset(maskData, Date<as.Date("2011-08-14")), 
+tmp <- createALERT(subset(fluData, Date<as.Date("2011-08-14")), 
                    allThresholds=TRUE, k=2, firstMonth=8, target.pct=.85)
 out <- as.data.frame(tmp$out)
 @
@@ -121,7 +121,7 @@ print(xtable(out, caption ="Printed table of the tmp\\$out object.",
 \section{An implementation of the robustALERT algorithm}
 
 <<robust, cache=TRUE>>=
-tmp2 <- robustALERT(subset(maskData, Date<as.Date("2011-08-14")), allThresholds=TRUE,
+tmp2 <- robustALERT(subset(fluData, Date<as.Date("2011-08-14")), allThresholds=TRUE,
                     k=2, firstMonth=8, lag=7, minWeeks=8, minPercent=c(.8, .85, .9),
                     maxDuration=c(12, 13, 14))
 @
