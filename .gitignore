@@ -2,3 +2,8 @@
 .Rhistory
 .RData
 *.Rproj
+vignettes/cache/*
+vignettes/ALERTDocumentation-concordance.tex
+vignettes/ALERTDocumentation.tex
+vignettes/ALERTDocumentation.log
+vignettes/ALERTDocumentation.synctex.gz
