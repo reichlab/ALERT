@@ -152,11 +152,11 @@ alert_eval <- robustALERT(data=fluData_subset, allThresholds=TRUE,
 @
 
 <<robustloadSilent, echo=FALSE>>=
-load(alert_eval)
+data(alert_eval)
 @
 
 
-Table \ref{tab:robust} shows slightly reformatted results from the {\tt tmp2} object, showing the mean cross-validated results of different rules.
+Table \ref{tab:robust} shows slightly reformatted results from the {\tt alert_eval} object, showing the mean cross-validated results of different rules.
 <<MyLaTeXT2Caption, echo = FALSE, results='asis', message=FALSE>>=
 colnames(alert_eval) <- c("rule", "thresh", "total cases", "dur", "ALERT cases", "%", "peaks", "peaks+/-k", "low weeks", "diff" )
 print(xtable(alert_eval, caption ="Printed table of the tmp2 object.", 
