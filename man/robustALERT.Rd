@@ -2,11 +2,15 @@
 \alias{robustALERT}
 \title{Cross-validating ALERT over a set of rules.}
 \usage{
-robustALERT(minPercent = NULL, maxDuration = NULL, data, firstMonth = 9,
+robustALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
   lag = 7, minWeeks = 8, allThresholds = TRUE, k = 0,
   target.pct = NULL)
 }
 \arguments{
+  \item{data}{the historical data to use in the analysis. A
+  data.frame with a "Date" column (must be Date objects)
+  and a "Cases" column.}
+
   \item{minPercent}{value or vector that specifies the
   minimum percent of cases to be captured on average by
   ALERT. This enables automated threshold selection.}
@@ -14,10 +18,6 @@ robustALERT(minPercent = NULL, maxDuration = NULL, data, firstMonth = 9,
   \item{maxDuration}{value or vector that specifies the
   maximum number of weeks to be captured on average by
   ALERT. This enables automated threshold selection.}
-
-  \item{data}{the historical data to use in the analysis. A
-  data.frame with a "Date" column (must be Date objects)
-  and a "Cases" column.}
 
   \item{firstMonth}{firstMonth month number which is
   counted as the first month of the 'flu year'}
@@ -75,8 +75,8 @@ function can be used to validate the results from
 }
 \examples{
 ## view the performance of ALERT over three levels of minimum case percentage and maximum duration length
-data(maskData)
-robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=maskData, k=2, target.pct=0.85)
+data(fluData)
+robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=fluData, k=2, target.pct=0.85)
 }
 \author{
 Nicholas G Reich and Stephen A Lauer

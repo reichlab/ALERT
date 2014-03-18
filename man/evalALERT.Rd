@@ -2,11 +2,15 @@
 \alias{evalALERT}
 \title{Cross-validating ALERT output under a rule}
 \usage{
-evalALERT(minPercent = NULL, maxDuration = NULL, data, firstMonth = 9,
+evalALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
   lag = 7, minWeeks = 8, allThresholds = TRUE, k = 0,
   target.pct = NULL)
 }
 \arguments{
+  \item{data}{the historical data to use in the analysis. A
+  data frame with a 'Date' column (must be \code{Date}
+  objects) and a 'Cases' column.}
+
   \item{minPercent}{specify the minimum percent of cases to
   be captured on average by ALERT. This enables automated
   threshold selection.}
@@ -14,10 +18,6 @@ evalALERT(minPercent = NULL, maxDuration = NULL, data, firstMonth = 9,
   \item{maxDuration}{specify the maximum number of weeks to
   be captured on average by ALERT. This enables automated
   threshold selection.}
-
-  \item{data}{the historical data to use in the analysis. A
-  data frame with a 'Date' column (must be \code{Date}
-  objects) and a 'Cases' column.}
 
   \item{firstMonth}{month number which is counted as the
   first month of the 'flu year'}
@@ -72,11 +72,11 @@ in that year. The metrics are saved and summarized.
 }
 \examples{
 ## find the highest threshold that has captured on average over 85\% of cases
-data(maskData)
-evalALERT(minPercent=.85, data=maskData, k=2)
+data(fluData)
+evalALERT(minPercent=.85, data=fluData, k=2)
 
 ## find the lowest threshold that has had an average duration of less than 12 weeks
-evalALERT(maxDuration=12, data=maskData, k=2)
+evalALERT(maxDuration=12, data=fluData, k=2)
 }
 \author{
 Nicholas G Reich and Stephen A Lauer

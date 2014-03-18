@@ -5,9 +5,6 @@
 #' @name fluData
 #' @docType data
 #' @format A weekly time series.
-#' @references %% ~~ possibly secondary sources and usages ~~
-#' @source %% ~~ reference to a publication or URL from which the data were
-#' obtained ~~
 #' @keywords fluData
 #' @examples
 #' 

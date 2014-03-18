@@ -74,9 +74,9 @@ thresholds table given data and other parameters.
 %% ~~further notes~~
 }
 \examples{
-## Find the ALERT thresholds table for maskData over all thresholds
-data(maskData)
-x <- createALERT(data=maskData, allThresholds=TRUE, k=2, target.pct=0.85)
+## Find the ALERT thresholds table for fluData over all thresholds
+data(fluData)
+x <- createALERT(data=fluData, allThresholds=TRUE, k=2, target.pct=0.85)
 x$out
 }
 \author{

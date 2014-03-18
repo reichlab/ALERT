@@ -24,8 +24,8 @@ percentage of cases.
 %% ~~further notes~~
 }
 \examples{
-data(maskData)
-postcastALERT(maskData, target.pct=.85)
+data(fluData)
+postcastALERT(fluData, target.pct=.85)
 }
 \author{
 Nicholas G Reich and Stephen A Lauer

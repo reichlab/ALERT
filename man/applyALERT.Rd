@@ -50,8 +50,8 @@ one year of data and a threshold and calculates metrics.
 }
 \examples{
 ## Find the ALERT metrics of a season with a threshold of 3
-data(maskData)
-applyALERT(data=maskData, threshold=3, k=2, target.pct=0.85)
+data(fluData)
+applyALERT(data=fluData, threshold=3, k=2, target.pct=0.85)
 }
 \author{
 Nicholas G Reich and Stephen A Lauer
