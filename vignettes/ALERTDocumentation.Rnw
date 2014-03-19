@@ -158,8 +158,7 @@ To evaluate a particular rule, the ALERT algorithm uses the {\tt evalALERT()} fu
 \end{itemize}
 
 \subsection*{Multiple rule evaluation}
-To evaluate many rules at a time, one can use the {\tt robustALERT()} function which streamlines the evaluation of several rules in one function.
-
+To evaluate many rules at a time, one can use the {\tt robustALERT()} function which streamlines the evaluation of several rules in one function. Note that the following command may take a long time (several minutes, for us) to run. (For the compilation of this vignette, the alert\_eval datafile was loaded from the package directly using {\tt data(alert_eval)} rather than relying on the time-consuming computation each time we compiled the document.)
 <<robust, tidy=FALSE, eval=FALSE>>=
 alert_eval <- robustALERT(data=fluData_subset, allThresholds=TRUE,
                           k=2, firstMonth=8, lag=7, minWeeks=8, 
@@ -182,6 +181,9 @@ print(xtable(alert_eval, caption ="Printed table of the alert\\_eval object.",
       #align=c("l","p\{3cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}", "p\{2cm\}"),
       hline.after=c(0, nrow(alert_eval)))
 @
+
+
+\subsection*{Comparing validation with historical performance}
 
 
 \section{Calibrating the sensitivity of the ALERT algorithm}

@@ -91,10 +91,10 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
     ## calculate thresholds to test
     nonZeroCaseCounts <- data$Cases[which(data$Cases>0)]
     if(allThresholds){
-        tmp <- quantile(nonZeroCaseCounts, probs=c(.1, .8))
+        tmp <- quantile(nonZeroCaseCounts, probs=c(.1, .6))
         thresholds <- unique(seq(ceiling(tmp[1]), tmp[2], by=1))
     } else {
-        thresholds <- unique(quantile(nonZeroCaseCounts, probs=seq(.1, .8, by=.1)))
+        thresholds <- unique(quantile(nonZeroCaseCounts, probs=seq(.1, .6, by=.1)))
     }
     
     ## for each threshold and year, calculate metrics
