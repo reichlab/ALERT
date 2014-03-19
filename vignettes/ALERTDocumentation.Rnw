@@ -52,12 +52,28 @@ require(ALERT)
 data(fluData)
 @
 
-The {\tt fluData} dataset has a particular format that we assume all ALERT datasets will follow. In particular, it is a {\tt data.frame} with a column named ``Date'' and a column named ``Cases''. These represent the number of cases observed in the week of time defined by the date given. This sample dataset is based on a real dataset, but the counts and dates have been modified upon the request of the data providers. This particular dataset has a total of $\Sexpr{sum(fluData$Cases)}$ cases reported across $\Sexpr{nrow(fluData)}$ weeks. The earliest observation is from $\Sexpr{format(min(fluData$Date), "%m/%d/%Y")}$ and the last observation is from $\Sexpr{format(max(fluData$Date), "%m/%d/%Y")}$. This is what the dataset looks like.
+The {\tt fluData} dataset has a particular format that we assume all ALERT datasets will follow. In particular, it is a {\tt data.frame} with a column named ``Date'' and a column named ``Cases''. These represent the number of cases observed in the week of time defined by the date given. This sample dataset is based on a real dataset, but the counts and dates have been modified upon the request of the data providers. This particular dataset has a total of $\Sexpr{sum(fluData$Cases)}$ cases reported across $\Sexpr{nrow(fluData)}$ weeks. The earliest observation is from $\Sexpr{format(min(fluData$Date), "%m/%d/%Y")}$ and the last observation is from $\Sexpr{format(max(fluData$Date), "%m/%d/%Y")}$. This is what the dataset looks like. (NOTE: lines that begin with \#\# indicate they are ouput from R that would be seen by the user who is having an interactive an R session.)
 <<dataPeek, fig.height=3.5, fig.width=7>>=
 head(fluData)
 require(ggplot2)
 qplot(x=Date, ymin=0, ymax=Cases, data=fluData, geom="linerange")
 @
+
+\subsection*{Data formatting}
+To get your dataset to work with the ALERT package, you will need to ensure that you have a column named ``Date'' and another named ``Cases''. You can rename columns of a {\tt data.frame} or {\tt matrix} object using the following command:
+<<renameColumn, eval=FALSE>>=
+colnames(fluData) <- c("Date", "Cases")
+@
+Also, the column of dates must be in the formal `Date' format of R. You can check the format of your date column by using the command
+<<checkDate>>=
+class(fluData$Date)
+@
+If the class of your Date column is not ``Date'', then you will need to run a command to modify the data. For example, if your dates are character strings in mm/dd/yyyy format, then you could run the following command to convert the format
+<<formatDate>>=
+fluData$Date <- as.Date(fluData$Date, "%m/%d/%Y")
+@
+Additional details about how to specify the format can be found by typing the commands {\tt ?as.Date} and/or {\tt ?strptime}.
+
 
 
 \section{Evaluating possible ALERT thresholds}
@@ -91,19 +107,19 @@ Full details of the usage of the {\tt createALERT()} function can be obtained by
 \item If the {\tt target.pct} option is specified, then {\tt createALERT()} computes the average difference between the duration of the ALERT period in a season and the duration of the shortest period needed to capture {\tt target.pct} of cases for that season.
 \end{itemize}
 
-Table \ref{tab:results} shows slightly reformatted results from the {\tt tmp\$out} object, showing the historical performance of different thresholds.
+Table \ref{tab:results} shows slightly reformatted results from the {\tt alert\_summary\$out} object, showing the historical performance of different thresholds. As one example, a user might choose the threshold of 6 because it is the highest threshold that has historically captured at least 85\% of the cases on average.
 <<table1, echo = FALSE, results='asis', message=FALSE>>=
 require(xtable)
 out <- as.data.frame(alert_summary$out)
 colnames(out) <- c("threshold", "avg dur", "mean", "min", "max", "sd", "peaks", "peaks+/-k", "low weeks", "diff" )
-print(xtable(out, caption ="Printed table of the tmp\\$out object.", 
+print(xtable(out, caption ="Printed table of the alert\\_summary\\$out object.", 
              label = 'tab:results', digits=1), 
       caption.placement="top", include.rownames=FALSE, 
       add.to.row=list(pos=list(-1), command="&&\\multicolumn{4}{c}{\\% of cases captured}&\\multicolumn{2}{c}{\\% captured}&& \\\\ \\cline{3-6} \\cline{7-8}"),
       hline.after=c(0, nrow(out)))
 @
 
-Looking at the historical performance metrics provides a useful snapshot of the performance of different thresholds. In many settings, this may provide enough information to choose a threshold for use in the future. However, more robust validation is needed to determine whether this algorithm might provide robust predictions about the future performance of a given threshold. 
+Looking at the historical performance metrics provides a useful snapshot of the performance of different thresholds. In many settings, this may provide enough information to choose a threshold for use in the future. However, the next section provides a more robust validation to determine whether the ALERT algorithm provides robust predictions about the future performance of a given threshold. 
 
 
 \section{Applying an ALERT threshold to a single year of data}
@@ -159,7 +175,7 @@ data(alert_eval)
 Table \ref{tab:robust} shows slightly reformatted results from the {\tt alert\_eval} object, showing the mean cross-validated results of different rules.
 <<MyLaTeXT2Caption, echo = FALSE, results='asis', message=FALSE>>=
 colnames(alert_eval) <- c("rule", "thresh", "total cases", "dur", "ALERT cases", "%", "peaks", "peaks+/-k", "low weeks", "diff" )
-print(xtable(alert_eval, caption ="Printed table of the tmp2 object.", 
+print(xtable(alert_eval, caption ="Printed table of the alert\\_eval object.", 
              label = 'tab:robust', digits=1),
       caption.placement="top", include.rownames=FALSE,
       #add.to.row=list(pos=list(-1), command="&\\multicolumn{4}{c}{average}&\\multicolumn{3}{c}{\\% captured}&& \\\\ \\cline{2-5} \\cline{6-8}"),
