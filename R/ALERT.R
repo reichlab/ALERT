@@ -171,61 +171,77 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
 #' applyALERT(data=fluData, threshold=3, k=2, target.pct=0.85)
 
 applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL, plot=FALSE) {
-    ## find first week where ALERT is hit
-    idxHitDate <- min(which(data$Cases>=threshold))
-    hitDate <- data[idxHitDate,"Date"]
-    idxStartDate <- idxHitDate + ceiling(lag/7)
-    startDate <- data[idxStartDate,"Date"]
-    
-    ## calculate end date
-    minEndIdx <- idxStartDate + minWeeks - 1
-    if(minEndIdx > nrow(data)) stop("start date occurred too late")
-    idxEndDate <- NA
-    i <- minEndIdx - 1
-    while(is.na(idxEndDate)){
-        i <- i + 1
-        if(is.na(data$Cases[i])) next
-        if(data$Cases[i] < threshold) idxEndDate <- i
-        if(i==nrow(data)) break
-    }
-    endDate <- data[idxEndDate, "Date"]
-    
-    ## make 0/1 vector for ALERT period
-    onALERT <- rep(0, nrow(data))
-    onALERT[idxStartDate:idxEndDate] <- 1
-    
-    ## get peak idx
-    idxPeak <- min(which(data$Cases==max(data$Cases, na.rm=TRUE))) ## could be multiple...
-    
-    ## run "postcasting" analysis
-    ## 1: what is the maximum number of cases captured in an X-week period, where X is the same duration as the ALERT period for this year.
-    ## 2: what is the shortest duration that captures X% of cases, where X is target.pct
-    if(!is.null(target.pct)) {
-        postcast <- postcastALERT(data, target.pct)
-    }
-    
-    ## define output
-    cnames <- c("tot.cases",
-                "duration",
-                "ALERT.cases",
-                "ALERT.cases.pct",
-                "peak.captured",
-                "peak.ext.captured",
-                "low.weeks.incl")
-    out <- rep(NA, length(cnames))
-    names(out) <- cnames
-    out["tot.cases"] <- sum(data$Cases) ## total cases for season
-    out["duration"] <- idxEndDate - idxStartDate + 1 ## duration of ALERT period
-    out["ALERT.cases"] <- sum(data$Cases*onALERT) ## total number of cases in ALERT period
-    out["ALERT.cases.pct"] <- out["ALERT.cases"]/out["tot.cases"] ## fraction of cases in ALERT period
-    out["peak.captured"] <- idxPeak>=idxStartDate & idxPeak<=idxEndDate ## peak captured
-    out["peak.ext.captured"] <- idxPeak>=(idxStartDate+k) & idxPeak<=(idxEndDate-k) ## peak +/- k weeks captured
-    out["low.weeks.incl"]  <- sum(data[idxStartDate:idxEndDate, "Cases"] < threshold)
-    if(!is.null(target.pct)) out <- c(out, duration.diff=unname(out["duration"]-postcast["duration"]))
-    else out <- c(out, duration.diff=NA)
-    if(plot) message("Plot option not implemented.")
-    
-    return(out)
+        ## confirm that ALERT threshold is hit in this year
+        if(any(data$Cases>=threshold)==FALSE) {
+                ## if no week exceeds threshold, retun empty vector
+                cnames <- c("tot.cases",
+                            "duration",
+                            "ALERT.cases",
+                            "ALERT.cases.pct",
+                            "peak.captured",
+                            "peak.ext.captured",
+                            "low.weeks.incl",
+                            "duration.diff")
+                out <- rep(NA, length(cnames))
+                names(out) <- cnames
+                return(out)
+        }
+        
+        ## find first week where ALERT is hit
+        idxHitDate <- min(which(data$Cases>=threshold))
+        hitDate <- data[idxHitDate,"Date"]
+        idxStartDate <- idxHitDate + ceiling(lag/7)
+        startDate <- data[idxStartDate,"Date"]
+        
+        ## calculate end date
+        minEndIdx <- idxStartDate + minWeeks - 1
+        if(minEndIdx > nrow(data)) stop("start date occurred too late")
+        idxEndDate <- NA
+        i <- minEndIdx - 1
+        while(is.na(idxEndDate)){
+                i <- i + 1
+                if(is.na(data$Cases[i])) next
+                if(data$Cases[i] < threshold) idxEndDate <- i
+                if(i==nrow(data)) break
+        }
+        endDate <- data[idxEndDate, "Date"]
+        
+        ## make 0/1 vector for ALERT period
+        onALERT <- rep(0, nrow(data))
+        onALERT[idxStartDate:idxEndDate] <- 1
+        
+        ## get peak idx
+        idxPeak <- min(which(data$Cases==max(data$Cases, na.rm=TRUE))) ## could be multiple...
+        
+        ## run "postcasting" analysis
+        ## 1: what is the maximum number of cases captured in an X-week period, where X is the same duration as the ALERT period for this year.
+        ## 2: what is the shortest duration that captures X% of cases, where X is target.pct
+        if(!is.null(target.pct)) {
+                postcast <- postcastALERT(data, target.pct)
+        }
+        
+        ## define output
+        cnames <- c("tot.cases",
+                    "duration",
+                    "ALERT.cases",
+                    "ALERT.cases.pct",
+                    "peak.captured",
+                    "peak.ext.captured",
+                    "low.weeks.incl")
+        out <- rep(NA, length(cnames))
+        names(out) <- cnames
+        out["tot.cases"] <- sum(data$Cases) ## total cases for season
+        out["duration"] <- idxEndDate - idxStartDate + 1 ## duration of ALERT period
+        out["ALERT.cases"] <- sum(data$Cases*onALERT) ## total number of cases in ALERT period
+        out["ALERT.cases.pct"] <- out["ALERT.cases"]/out["tot.cases"] ## fraction of cases in ALERT period
+        out["peak.captured"] <- idxPeak>=idxStartDate & idxPeak<=idxEndDate ## peak captured
+        out["peak.ext.captured"] <- idxPeak>=(idxStartDate+k) & idxPeak<=(idxEndDate-k) ## peak +/- k weeks captured
+        out["low.weeks.incl"]  <- sum(data[idxStartDate:idxEndDate, "Cases"] < threshold)
+        if(!is.null(target.pct)) out <- c(out, duration.diff=unname(out["duration"]-postcast["duration"]))
+        else out <- c(out, duration.diff=NA)
+        if(plot) message("Plot option not implemented.")
+        
+        return(out)
 }
 
 
@@ -298,7 +314,7 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
             output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, 
                                                 lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, 
                                                 k=k, target.pct=minPercent)$out)
-            output1 <- subset(output, mean.pct.cases.captured>minPercent)
+            output1 <- subset(output, mean.pct.cases.captured>minPercent*100)
             ## find largest threshold that achieves target percent covered
             if(length(output1[,1])==0){
                 print(paste0("The average captured percentage for each threshold in the year ", years[j], " fell below the minimum percentage of ", minPercent, "."))
