@@ -91,10 +91,10 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
     ## calculate thresholds to test
     nonZeroCaseCounts <- data$Cases[which(data$Cases>0)]
     if(allThresholds){
-        tmp <- quantile(nonZeroCaseCounts, probs=c(.1, .5))
+        tmp <- quantile(nonZeroCaseCounts, probs=c(.1, .8))
         thresholds <- unique(seq(ceiling(tmp[1]), tmp[2], by=1))
     } else {
-        thresholds <- unique(quantile(nonZeroCaseCounts, probs=seq(.1, .5, by=.1)))
+        thresholds <- unique(quantile(nonZeroCaseCounts, probs=seq(.1, .8, by=.1)))
     }
     
     ## for each threshold and year, calculate metrics
@@ -295,7 +295,9 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
             ## leave one season out of data
             data1 <- data[-idxs[[j]],]
             ## run createALERT on other data
-            output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, k=k, target.pct=minPercent)$out)
+            output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, 
+                                                lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, 
+                                                k=k, target.pct=minPercent)$out)
             output1 <- subset(output, mean.pct.cases.captured>minPercent)
             ## find largest threshold that achieves target percent covered
             if(length(output1[,1])==0){
