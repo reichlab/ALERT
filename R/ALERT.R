@@ -94,7 +94,7 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
         tmp <- quantile(nonZeroCaseCounts, probs=c(.1, .6))
         thresholds <- unique(seq(ceiling(tmp[1]), tmp[2], by=1))
     } else {
-        thresholds <- unique(quantile(nonZeroCaseCounts, probs=seq(.1, .6, by=.1)))
+        thresholds <- unique(ceiling(quantile(nonZeroCaseCounts, probs=seq(.1, .6, by=.1))))
     }
     
     ## for each threshold and year, calculate metrics
@@ -173,6 +173,8 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
 applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL, plot=FALSE) {
         ## confirm that ALERT threshold is hit in this year
         if(any(data$Cases>=threshold)==FALSE) {
+                message(paste("In the season starting in", year(data$Date[1]), 
+                              "the threshold of", threshold, "was not hit."))
                 ## if no week exceeds threshold, retun empty vector
                 cnames <- c("tot.cases",
                             "duration",
@@ -182,8 +184,10 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
                             "peak.ext.captured",
                             "low.weeks.incl",
                             "duration.diff")
-                out <- rep(NA, length(cnames))
+                out <- rep(0, length(cnames)) ## almost everything set to zero
                 names(out) <- cnames
+                out[c("tot.cases")] <- sum(data$Cases)
+                out[c("duration.diff")] <- NA ## leave out duration diffs when ALERT is not hit.
                 return(out)
         }
         
