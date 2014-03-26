@@ -49,28 +49,28 @@ install_github("ALERT", "nickreich")
 Then, to load the ALERT package and the sample dataset that comes with the package, run the following commands: 
 <<setup, message=FALSE>>=
 require(ALERT)
-data(fluData)
+data(maskData)
 @
 
-The {\tt fluData} dataset has a particular format that we assume all ALERT datasets will follow. In particular, it is a {\tt data.frame} with a column named ``Date'' and a column named ``Cases''. These represent the number of cases observed in the week of time defined by the date given. This sample dataset is based on a real dataset, but the counts and dates have been modified upon the request of the data providers. This particular dataset has a total of $\Sexpr{sum(fluData$Cases)}$ cases reported across $\Sexpr{nrow(fluData)}$ weeks. The earliest observation is from $\Sexpr{format(min(fluData$Date), "%m/%d/%Y")}$ and the last observation is from $\Sexpr{format(max(fluData$Date), "%m/%d/%Y")}$. This is what the dataset looks like. (NOTE: lines that begin with \#\# indicate they are ouput from R that would be seen by the user who is having an interactive an R session.)
+The {\tt maskData} dataset has a particular format that we assume all ALERT datasets will follow. In particular, it is a {\tt data.frame} with a column named ``Date'' and a column named ``Cases''. These represent the number of cases observed in the week of time defined by the date given. This sample dataset is based on a real dataset, but the counts and dates have been modified upon the request of the data providers. This particular dataset has a total of $\Sexpr{sum(maskData$Cases)}$ cases reported across $\Sexpr{nrow(maskData)}$ weeks. The earliest observation is from $\Sexpr{format(min(maskData$Date), "%m/%d/%Y")}$ and the last observation is from $\Sexpr{format(max(maskData$Date), "%m/%d/%Y")}$. This is what the dataset looks like. (NOTE: lines that begin with \#\# indicate they are ouput from R that would be seen by the user who is having an interactive an R session.)
 <<dataPeek, fig.height=3.5, fig.width=7>>=
-head(fluData)
+head(maskData)
 require(ggplot2)
-qplot(x=Date, ymin=0, ymax=Cases, data=fluData, geom="linerange")
+qplot(x=Date, ymin=0, ymax=Cases, data=maskData, geom="linerange")
 @
 
 \subsection*{Data formatting}
 To get your dataset to work with the ALERT package, you will need to ensure that you have a column named ``Date'' and another named ``Cases''. You can rename columns of a {\tt data.frame} or {\tt matrix} object using the following command:
 <<renameColumn, eval=FALSE>>=
-colnames(fluData) <- c("Date", "Cases")
+colnames(maskData) <- c("Date", "Cases")
 @
 Also, the column of dates must be in the formal `Date' format of R. You can check the format of your date column by using the command
 <<checkDate>>=
-class(fluData$Date)
+class(maskData$Date)
 @
 If the class of your Date column is not ``Date'', then you will need to run a command to modify the data. For example, if your dates are character strings in mm/dd/yyyy format, then you could run the following command to convert the format
 <<formatDate>>=
-fluData$Date <- as.Date(fluData$Date, "%m/%d/%Y")
+maskData$Date <- as.Date(maskData$Date, "%m/%d/%Y")
 @
 Additional details about how to specify the format can be found by typing the commands {\tt ?as.Date} and/or {\tt ?strptime}.
 
@@ -95,7 +95,7 @@ For each threshold considered, the ALERT algorithm summarizes data from previous
 \subsection*{Evaluating threshold calculations}
 Using the dataset shown in Section \ref{sec:data}, we will evaluate a set of potential thresholds using the ALERT algorithm. 
 <<simple, tidy=FALSE>>=
-fluData_subset <- subset(fluData, Date<as.Date("2011-08-14"))
+fluData_subset <- subset(maskData, Date<as.Date("2011-08-14"))
 alert_summary <- createALERT(fluData_subset, allThresholds=TRUE, 
                              k=2, firstMonth=8, target.pct=.85)
 @
@@ -126,7 +126,7 @@ Looking at the historical performance metrics provides a useful snapshot of the 
 If we know what threshold we would like to use, we can apply it to a year of data to determine how it would have performed on that season of data using the {\tt applyALERT()} function.
 
 <<applyALERT, tidy=FALSE>>=
-fluData_singleSeason <- subset(fluData, 
+fluData_singleSeason <- subset(maskData, 
                                Date>=as.Date("2011-08-14")&Date<=as.Date("2012-08-13"))
 alert_applied <- applyALERT(data=fluData_singleSeason, threshold=3, 
                             k=2, target.pct=0.85)
