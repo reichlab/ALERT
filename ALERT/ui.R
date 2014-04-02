@@ -32,7 +32,11 @@ shinyUI(pageWithSidebar(
         
         tags$hr(),
         
-        helpText("Created by Stephen A Lauer and Nicholas G Reich")
+        helpText("Created by Stephen A Lauer and Nicholas G Reich"),
+        
+        helpText(a("Send us your comments or feedback!", href="mailto:slauer@schoolph.umass.edu", target="_blank")),
+        
+        helpText(a("ALERT on GitHub", href="https://github.com/nickreich/ALERT", target="_blank"))
     ),
     
     mainPanel(

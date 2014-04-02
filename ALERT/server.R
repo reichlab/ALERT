@@ -21,8 +21,8 @@ shinyServer(function(input, output) {
     
     output$dataplot <- renderPlot({
         data.plot <- ggplot(data=data()) + 
-            geom_bar(aes(x=Date, y=Cases), stat="identity", fill="#0072B2", 
-                     color="#0072B2") + 
+            geom_bar(aes(x=Date, y=Cases), stat="identity", fill="#0072B2", color="#0072B2") + 
+            scale_y_continuous(name="") +
             theme_bw() + 
             theme(axis.title.x = element_blank(),
                   axis.title.y = element_text(face="bold", size=18),
