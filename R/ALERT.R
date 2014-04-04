@@ -1,4 +1,4 @@
-#' Masked ALERT test data
+#' ALERT test data
 #' 
 #' Weekly influenza cases from a hospital
 #' 
