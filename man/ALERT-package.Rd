@@ -16,12 +16,12 @@ the upcoming flu season. Use robustALERT to cross-validate
 createALERT under a set of rules.
 }
 \examples{
-data(maskData)
+data(fluData)
 ## project the proper start date for the upcoming flu season
-createALERT(data=maskData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
+createALERT(data=fluData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
 
 ## cross validate the above projection
-robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=maskData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
+robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=fluData, firstMonth=8, lag=7, minWeeks=8, allThresholds=TRUE, k=2, target.pct=0.85)
 }
 \author{
 Nicholas G Reich, Stephen A Lauer, et al.
