@@ -360,15 +360,15 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
     }
     
     ## take averages of the metrics for final row
-    bbb <- c("Mean", round(mean(eval.dat$threshold),1), 
-             round(mean(eval.dat$tot.cases),1), 
-             round(mean(eval.dat$duration),1), 
-             round(mean(eval.dat$ALERT.cases),1), 
-             round(mean(eval.dat$ALERT.cases.pct),3), 
+    bbb <- c("Summaries", round(median(eval.dat$threshold),1), 
+             round(median(eval.dat$tot.cases),1), 
+             round(median(eval.dat$duration),1), 
+             round(median(eval.dat$ALERT.cases),1), 
+             round(median(eval.dat$ALERT.cases.pct),3), 
              round(mean(eval.dat$peak.captured),3), 
              round(mean(eval.dat$peak.ext.captured),3), 
-             round(mean(eval.dat$low.weeks.incl),1), 
-             round(mean(eval.dat$duration.diff),1))
+             round(median(eval.dat$low.weeks.incl),1), 
+             round(median(eval.dat$duration.diff),1))
     eval.dat <- rbind.data.frame(eval.dat, bbb)
     return(eval.dat)
 }
