@@ -25,7 +25,7 @@ data(fluData)
 #' 
 #' @name alert_eval
 #' @docType data
-#' @format a data.frame
+#' @format Data frame with the output from robustALERT used in the vignette.
 #' @keywords alert_eval
 #' @examples
 #' 
@@ -287,7 +287,7 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
 #' ## find the lowest threshold that has had an average duration of less than 12 weeks
 #' evalALERT(maxDuration=12, data=fluData, k=2)
 
-evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL) {
+evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag=7, minWeeks=8, allThresholds=FALSE, k=0, target.pct=NULL) {
     if(is.null(maxDuration) & is.null(minPercent))
         stop("Please choose a rule to evaluate, either with maxDuration or minPercent.")
     ## check for correct column headers
