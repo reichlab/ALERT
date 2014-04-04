@@ -44,27 +44,25 @@ statistics can be found in \code{\link{applyALERT})}.
 performance of different ALERT thresholds. The columns for
 this matrix are as follows: \item{threshold }{the minimum
 threshold number of cases needed to begin the ALERT period}
-\item{mean.dur }{the mean ALERT period duration in weeks}
-\item{mean.pct.cases.captured }{across all seasons, the
-average percentage of all influenza cases contained within
-the ALERT period} \item{min.pct.cases.captured }{the
-minimum percentage of annual cases captured during the
-ALERT period in any season} \item{max.pct.cases.captured
-}{the maximum percentage of annual cases captured during
-the ALERT period in any season} \item{sd.pct.cases.captured
-}{the standard deviation of the percentage of annual cases
-captured during the ALERT period} \item{pct.peaks.captured
-}{the percentage of seasons in which the ALERT period
-contained the peak week} \item{pct.ext.peaks.captured }{the
-percentage of seasons in which the ALERT period contained
-the peak week +/- \code{k} weeks} \item{mean.low.weeks.incl
-}{the average number of weeks included in the ALERT period
-with counts less than \code{threshold}}
-\item{mean.duration.diff }{if \code{target.pct} specified,
-the average difference between the duration of the ALERT
-period in a season and the duration of the shortest period
-needed to capture \code{target.pct} of cases for that
-season}
+\item{median.dur }{the median ALERT period duration in
+weeks} \item{median.pct.cases.captured }{across all
+seasons, the average percentage of all influenza cases
+contained within the ALERT period}
+\item{min.pct.cases.captured }{the minimum percentage of
+annual cases captured during the ALERT period in any
+season} \item{max.pct.cases.captured }{the maximum
+percentage of annual cases captured during the ALERT period
+in any season} \item{pct.peaks.captured }{the percentage of
+seasons in which the ALERT period contained the peak week}
+\item{pct.ext.peaks.captured }{the percentage of seasons in
+which the ALERT period contained the peak week +/- \code{k}
+weeks} \item{mean.low.weeks.incl }{the average number of
+weeks included in the ALERT period with counts less than
+\code{threshold}} \item{mean.duration.diff }{if
+\code{target.pct} specified, the average difference between
+the duration of the ALERT period in a season and the
+duration of the shortest period needed to capture
+\code{target.pct} of cases for that season}
 }
 \description{
 The \code{createALERT} function calculates the ALERT
