@@ -51,11 +51,10 @@ data(alert_eval)
 #' 
 #' \code{createALERT()$out} produces a matrix summarizing the performance of different ALERT thresholds. The columns for this matrix are as follows:
 #' \item{threshold }{the minimum threshold number of cases needed to begin the ALERT period}
-#' \item{mean.dur }{the mean ALERT period duration in weeks}
-#' \item{mean.pct.cases.captured }{across all seasons, the average percentage of all influenza cases contained within the ALERT period}
+#' \item{median.dur }{the median ALERT period duration in weeks}
+#' \item{median.pct.cases.captured }{across all seasons, the average percentage of all influenza cases contained within the ALERT period}
 #' \item{min.pct.cases.captured }{the minimum percentage of annual cases captured during the ALERT period in any season}
 #' \item{max.pct.cases.captured }{the maximum percentage of annual cases captured during the ALERT period in any season}
-#' \item{sd.pct.cases.captured }{the standard deviation of the percentage of annual cases captured during the ALERT period}
 #' \item{pct.peaks.captured }{the percentage of seasons in which the ALERT period contained the peak week}
 #' \item{pct.ext.peaks.captured }{the percentage of seasons in which the ALERT period contained the peak week +/- \code{k} weeks}
 #' \item{mean.low.weeks.incl }{the average number of weeks included in the ALERT period with counts less than \code{threshold}}
@@ -99,11 +98,10 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
     
     ## for each threshold and year, calculate metrics
     cnames <- c("threshold",
-                "mean.dur",
-                "mean.pct.cases.captured",
+                "median.dur",
+                "median.pct.cases.captured",
                 "min.pct.cases.captured",
                 "max.pct.cases.captured",
-                "sd.pct.cases.captured",
                 "pct.peaks.captured",
                 "pct.ext.peaks.captured",
                 "mean.low.weeks.incl")
@@ -123,11 +121,10 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
         }
         details[[i]] <- tmp
         out[i,"threshold"] <- thresholds[i] ## threshold used
-        out[i,"mean.dur"] <- mean(tmp[,"duration"], na.rm=TRUE) ## mean duration
-        out[i,"mean.pct.cases.captured"] <- round(100*mean(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## mean % of cases captured
+        out[i,"median.dur"] <- median(tmp[,"duration"], na.rm=TRUE) ## median duration
+        out[i,"median.pct.cases.captured"] <- round(100*median(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## median % of cases captured
         out[i,"min.pct.cases.captured"] <- round(100*min(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## min % of cases captured
         out[i,"max.pct.cases.captured"] <- round(100*max(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## max % of cases captured
-        out[i,"sd.pct.cases.captured"] <- round(100*sd(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## sd % of cases captured
         out[i,"pct.peaks.captured"] <- round(100*sum(tmp[,"peak.captured"])/nrow(tmp),1) ## % of times peak captured
         out[i,"pct.ext.peaks.captured"] <- round(100*sum(tmp[,"peak.ext.captured"])/nrow(tmp),1) ## % of times peak +/- k weeks captured
         out[i,"mean.low.weeks.incl"] <- mean(tmp[,"low.weeks.incl"], na.rm=TRUE)
@@ -319,7 +316,7 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
             output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, 
                                                 lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, 
                                                 k=k, target.pct=minPercent)$out)
-            output1 <- subset(output, mean.pct.cases.captured>minPercent*100)
+            output1 <- subset(output, median.pct.cases.captured>minPercent*100)
             ## find largest threshold that achieves target percent covered
             if(length(output1[,1])==0){
                 print(paste0("The average captured percentage for each threshold in the year ", years[j], " fell below the minimum percentage of ", minPercent, "."))
@@ -344,7 +341,7 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
             data1 <- data[-idxs[[j]],]
             ## run createALERT on other data
             output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, k=k, target.pct=target.pct)$out)
-            output1 <- subset(output, mean.dur<maxDuration)
+            output1 <- subset(output, median.dur<maxDuration)
             ## find smallest threshold that has a duration shorter than maxDuration
             if(length(output1[,1])==0){
                 print(paste("The average durations for each threshold in the year", years[j], "exceeded", maxDuration, "weeks."))

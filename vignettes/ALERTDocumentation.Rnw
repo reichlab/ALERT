@@ -111,11 +111,11 @@ Table \ref{tab:results} shows slightly reformatted results from the {\tt alert\_
 <<table1, echo = FALSE, results='asis', message=FALSE>>=
 require(xtable)
 out <- as.data.frame(alert_summary$out)
-colnames(out) <- c("threshold", "avg dur", "mean", "min", "max", "sd", "peaks", "peaks+/-k", "low weeks", "diff" )
+colnames(out) <- c("threshold", "med dur", "median", "min", "max", "peaks", "peaks+/-k", "low weeks", "diff" )
 print(xtable(out, caption ="Printed table of the alert\\_summary\\$out object.", 
              label = 'tab:results', digits=1), 
       caption.placement="top", include.rownames=FALSE, 
-      add.to.row=list(pos=list(-1), command="&&\\multicolumn{4}{c}{\\% of cases captured}&\\multicolumn{2}{c}{\\% captured}&& \\\\ \\cline{3-6} \\cline{7-8}"),
+      add.to.row=list(pos=list(-1), command="&&\\multicolumn{3}{c}{\\% of cases captured}&\\multicolumn{2}{c}{\\% captured}&& \\\\ \\cline{3-5} \\cline{6-7}"),
       hline.after=c(0, nrow(out)))
 @
 
