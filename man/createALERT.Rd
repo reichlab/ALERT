@@ -46,7 +46,7 @@ this matrix are as follows: \item{threshold }{the minimum
 threshold number of cases needed to begin the ALERT period}
 \item{median.dur }{the median ALERT period duration in
 weeks} \item{median.pct.cases.captured }{across all
-seasons, the average percentage of all influenza cases
+seasons, the median percentage of all influenza cases
 contained within the ALERT period}
 \item{min.pct.cases.captured }{the minimum percentage of
 annual cases captured during the ALERT period in any
@@ -56,10 +56,10 @@ in any season} \item{pct.peaks.captured }{the percentage of
 seasons in which the ALERT period contained the peak week}
 \item{pct.ext.peaks.captured }{the percentage of seasons in
 which the ALERT period contained the peak week +/- \code{k}
-weeks} \item{mean.low.weeks.incl }{the average number of
+weeks} \item{median.low.weeks.incl }{the median number of
 weeks included in the ALERT period with counts less than
-\code{threshold}} \item{mean.duration.diff }{if
-\code{target.pct} specified, the average difference between
+\code{threshold}} \item{median.duration.diff }{if
+\code{target.pct} specified, the median difference between
 the duration of the ALERT period in a season and the
 duration of the shortest period needed to capture
 \code{target.pct} of cases for that season}

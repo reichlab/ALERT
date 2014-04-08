@@ -12,12 +12,14 @@ robustALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
   and a "Cases" column.}
 
   \item{minPercent}{value or vector that specifies the
-  minimum percent of cases to be captured on average by
-  ALERT. This enables automated threshold selection.}
+  minimum percent of cases to be captured at least 50\% of
+  the time by ALERT. This enables automated threshold
+  selection.}
 
   \item{maxDuration}{value or vector that specifies the
-  maximum number of weeks to be captured on average by
-  ALERT. This enables automated threshold selection.}
+  maximum number of weeks to be captured at least 50\% of
+  the time by ALERT. This enables automated threshold
+  selection.}
 
   \item{firstMonth}{firstMonth month number which is
   counted as the first month of the 'flu year'}
@@ -40,7 +42,7 @@ robustALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
   maxDuration (optional)}
 }
 \value{
-A table of the average threshold and ALERT results
+A table of the median threshold and ALERT results
 determined by each rule with \code{\link{evalALERT}} with
 the following columns: \item{rule }{each rule that was
 specified by the user, either by \code{minPercent} or

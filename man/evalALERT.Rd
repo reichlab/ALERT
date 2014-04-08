@@ -3,7 +3,7 @@
 \title{Cross-validating ALERT output under a rule}
 \usage{
 evalALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
-  lag = 7, minWeeks = 8, allThresholds = TRUE, k = 0,
+  lag = 7, minWeeks = 8, allThresholds = FALSE, k = 0,
   target.pct = NULL)
 }
 \arguments{
@@ -12,12 +12,12 @@ evalALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
   objects) and a 'Cases' column.}
 
   \item{minPercent}{specify the minimum percent of cases to
-  be captured on average by ALERT. This enables automated
-  threshold selection.}
+  be captured at least 50\% of the time by ALERT. This
+  enables automated threshold selection.}
 
   \item{maxDuration}{specify the maximum number of weeks to
-  be captured on average by ALERT. This enables automated
-  threshold selection.}
+  be captured at least 50\% of the time by ALERT. This
+  enables automated threshold selection.}
 
   \item{firstMonth}{month number which is counted as the
   first month of the 'flu year'}
@@ -42,17 +42,17 @@ evalALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
 Returns a table with the following columns: \item{season
 }{each flu season in the \code{data} that was able to be
 evaluated for the given rule, with the final row reserved
-for "Mean"} \item{threshold }{the minimum threshold number
-of cases needed to begin the ALERT period} \item{tot.cases
-}{total number of cases for the season} \item{duration
-}{duration of the ALERT period} \item{ALERT.cases }{total
-number of cases in the ALERT period} \item{ALERT.cases.pct
-}{fraction of cases in the ALERT period}
-\item{peak.captured }{1 if peak was captured, 0 otherwise}
-\item{peak.ext.captured }{1 if peak +/- \code{k} weeks
-captured, 0 otherwise} \item{low.weeks.incl }{the number of
-weeks included in the ALERT period with counts less than
-\code{threshold}} \item{duration.diff }{if
+for summary statistics} \item{threshold }{the minimum
+threshold number of cases needed to begin the ALERT period}
+\item{tot.cases }{total number of cases for the season}
+\item{duration }{duration of the ALERT period}
+\item{ALERT.cases }{total number of cases in the ALERT
+period} \item{ALERT.cases.pct }{fraction of cases in the
+ALERT period} \item{peak.captured }{1 if peak was captured,
+0 otherwise} \item{peak.ext.captured }{1 if peak +/-
+\code{k} weeks captured, 0 otherwise} \item{low.weeks.incl
+}{the number of weeks included in the ALERT period with
+counts less than \code{threshold}} \item{duration.diff }{if
 \code{target.pct} specified, the difference between the
 duration of the ALERT period and the duration of the
 shortest period needed to capture \code{target.pct} using
@@ -71,11 +71,11 @@ in that year. The metrics are saved and summarized.
 %% ~~further notes~~
 }
 \examples{
-## find the highest threshold that has captured on average over 85\% of cases
+## find the highest threshold captures at least 85\% half of the time
 data(fluData)
 evalALERT(minPercent=.85, data=fluData, k=2)
 
-## find the lowest threshold that has had an average duration of less than 12 weeks
+## find the lowest threshold that has a median duration of less than 12 weeks
 evalALERT(maxDuration=12, data=fluData, k=2)
 }
 \author{

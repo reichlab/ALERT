@@ -52,13 +52,13 @@ data(alert_eval)
 #' \code{createALERT()$out} produces a matrix summarizing the performance of different ALERT thresholds. The columns for this matrix are as follows:
 #' \item{threshold }{the minimum threshold number of cases needed to begin the ALERT period}
 #' \item{median.dur }{the median ALERT period duration in weeks}
-#' \item{median.pct.cases.captured }{across all seasons, the average percentage of all influenza cases contained within the ALERT period}
+#' \item{median.pct.cases.captured }{across all seasons, the median percentage of all influenza cases contained within the ALERT period}
 #' \item{min.pct.cases.captured }{the minimum percentage of annual cases captured during the ALERT period in any season}
 #' \item{max.pct.cases.captured }{the maximum percentage of annual cases captured during the ALERT period in any season}
 #' \item{pct.peaks.captured }{the percentage of seasons in which the ALERT period contained the peak week}
 #' \item{pct.ext.peaks.captured }{the percentage of seasons in which the ALERT period contained the peak week +/- \code{k} weeks}
-#' \item{mean.low.weeks.incl }{the average number of weeks included in the ALERT period with counts less than \code{threshold}}
-#' \item{mean.duration.diff }{if \code{target.pct} specified, the average difference between the duration of the ALERT period in a season and the duration of the shortest period needed to capture \code{target.pct} of cases for that season}
+#' \item{median.low.weeks.incl }{the median number of weeks included in the ALERT period with counts less than \code{threshold}}
+#' \item{median.duration.diff }{if \code{target.pct} specified, the median difference between the duration of the ALERT period in a season and the duration of the shortest period needed to capture \code{target.pct} of cases for that season}
 #' @note %% ~~further notes~~
 #' @author Nicholas G Reich and Stephen A Lauer
 #' @seealso \code{\link{evalALERT}} cross-validates ALERT data over a rule
@@ -104,8 +104,8 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
                 "max.pct.cases.captured",
                 "pct.peaks.captured",
                 "pct.ext.peaks.captured",
-                "mean.low.weeks.incl")
-    if(!is.null(target.pct)) cnames <- c(cnames, "mean.duration.diff")
+                "median.low.weeks.incl")
+    if(!is.null(target.pct)) cnames <- c(cnames, "median.duration.diff")
     out <- matrix(NA, nrow=length(thresholds), ncol=length(cnames))
     colnames(out) <- cnames
     details <- vector("list", length(thresholds))
@@ -127,8 +127,8 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
         out[i,"max.pct.cases.captured"] <- round(100*max(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## max % of cases captured
         out[i,"pct.peaks.captured"] <- round(100*sum(tmp[,"peak.captured"])/nrow(tmp),1) ## % of times peak captured
         out[i,"pct.ext.peaks.captured"] <- round(100*sum(tmp[,"peak.ext.captured"])/nrow(tmp),1) ## % of times peak +/- k weeks captured
-        out[i,"mean.low.weeks.incl"] <- mean(tmp[,"low.weeks.incl"], na.rm=TRUE)
-        if(!is.null(target.pct)) out[i,"mean.duration.diff"] <- mean(tmp[,"duration.diff"], na.rm=TRUE)
+        out[i,"median.low.weeks.incl"] <- median(tmp[,"low.weeks.incl"], na.rm=TRUE)
+        if(!is.null(target.pct)) out[i,"median.duration.diff"] <- median(tmp[,"duration.diff"], na.rm=TRUE)
     }
     return(list(out=out, details=details))
 }
@@ -253,8 +253,8 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
 #' 
 #' @aliases evalALERT
 #' @param data the historical data to use in the analysis. A data frame with a 'Date' column (must be \code{Date} objects) and a 'Cases' column.
-#' @param minPercent specify the minimum percent of cases to be captured on average by ALERT. This enables automated threshold selection.
-#' @param maxDuration specify the maximum number of weeks to be captured on average by ALERT. This enables automated threshold selection.
+#' @param minPercent specify the minimum percent of cases to be captured at least 50\% of the time by ALERT. This enables automated threshold selection.
+#' @param maxDuration specify the maximum number of weeks to be captured at least 50\% of the time by ALERT. This enables automated threshold selection.
 #' @param firstMonth month number which is counted as the first month of the 'flu year' 
 #' @param lag lag time between report date and action taken
 #' @param minWeeks minimum number of weeks to be in ALERT
@@ -262,7 +262,7 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
 #' @param k the number of weeks around the peak to evaluate ALERT coverage for
 #' @param target.pct the percentage of cases the user is targeting during the ALERT period when testing \code{maxDuration} (optional)
 #' @return Returns a table with the following columns: 
-#'      \item{season }{each flu season in the \code{data} that was able to be evaluated for the given rule, with the final row reserved for "Mean"}
+#'      \item{season }{each flu season in the \code{data} that was able to be evaluated for the given rule, with the final row reserved for summary statistics}
 #'      \item{threshold }{the minimum threshold number of cases needed to begin the ALERT period}
 #'      \item{tot.cases }{total number of cases for the season} 
 #'      \item{duration }{duration of the ALERT period}
@@ -280,11 +280,11 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
 #' @keywords evalALERT
 #' @examples
 #' 
-#' ## find the highest threshold that has captured on average over 85% of cases
+#' ## find the highest threshold captures at least 85% half of the time
 #' data(fluData)
 #' evalALERT(minPercent=.85, data=fluData, k=2)
 #' 
-#' ## find the lowest threshold that has had an average duration of less than 12 weeks
+#' ## find the lowest threshold that has a median duration of less than 12 weeks
 #' evalALERT(maxDuration=12, data=fluData, k=2)
 
 evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag=7, minWeeks=8, allThresholds=FALSE, k=0, target.pct=NULL) {
@@ -316,10 +316,10 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
             output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, 
                                                 lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, 
                                                 k=k, target.pct=minPercent)$out)
-            output1 <- subset(output, median.pct.cases.captured>minPercent*100)
+            output1 <- subset(output, median.pct.cases.captured>=minPercent*100)
             ## find largest threshold that achieves target percent covered
             if(length(output1[,1])==0){
-                print(paste0("The average captured percentage for each threshold in the year ", years[j], " fell below the minimum percentage of ", minPercent, "."))
+                print(paste0("The median captured percentage for each threshold in the year ", years[j], " fell below the minimum percentage of ", minPercent, "."))
                 next # skips any years where target percentage is not achieved
             }
             opt.thresh <- max(output1$threshold)
@@ -341,10 +341,10 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
             data1 <- data[-idxs[[j]],]
             ## run createALERT on other data
             output <- as.data.frame(createALERT(data=data1, firstMonth=firstMonth, lag=lag, minWeeks=minWeeks, allThresholds=allThresholds, k=k, target.pct=target.pct)$out)
-            output1 <- subset(output, median.dur<maxDuration)
+            output1 <- subset(output, median.dur<=maxDuration)
             ## find smallest threshold that has a duration shorter than maxDuration
             if(length(output1[,1])==0){
-                print(paste("The average durations for each threshold in the year", years[j], "exceeded", maxDuration, "weeks."))
+                print(paste("The median durations for each threshold in the year", years[j], "exceeded", maxDuration, "weeks."))
                 next # skips any years where all durations are too long
             }
             opt.thresh <- min(output1$threshold)
@@ -359,7 +359,7 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
         colnames(eval.dat) <- names(aaa)
     }
     
-    ## take averages of the metrics for final row
+    ## take summary statistics for final row
     bbb <- c("Summaries", round(median(eval.dat$threshold),1), 
              round(median(eval.dat$tot.cases),1), 
              round(median(eval.dat$duration),1), 
@@ -381,10 +381,10 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
 #' @param data the historical data to use in the analysis. A data.frame with a
 #' "Date" column (must be Date objects) and a "Cases" column.
 #' @param minPercent value or vector that specifies the minimum percent of
-#' cases to be captured on average by ALERT. This enables automated threshold
+#' cases to be captured at least 50\% of the time by ALERT. This enables automated threshold
 #' selection.
 #' @param maxDuration value or vector that specifies the maximum number of
-#' weeks to be captured on average by ALERT. This enables automated threshold
+#' weeks to be captured at least 50\% of the time by ALERT. This enables automated threshold
 #' selection.
 #' @param firstMonth firstMonth month number which is counted as the first
 #' month of the 'flu year'
@@ -397,7 +397,7 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
 #' coverage for
 #' @param target.pct can specify the percentage of cases the user is targeting
 #' during the ALERT period when testing maxDuration (optional)
-#' @return A table of the average threshold and ALERT results determined by each rule with \code{\link{evalALERT}} with the following columns:
+#' @return A table of the median threshold and ALERT results determined by each rule with \code{\link{evalALERT}} with the following columns:
 #' \item{rule }{each rule that was specified by the user, either by \code{minPercent} or \code{maxDuration}}
 #'      \item{threshold }{the minimum threshold number of cases needed to begin the ALERT period}
 #'      \item{tot.cases }{total number of cases for the season} 
@@ -457,6 +457,7 @@ robustALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, l
     robust.dat[,6] <- round(100*as.numeric(robust.dat[,6]),1)
     robust.dat[,7] <- round(100*as.numeric(robust.dat[,7]),1)
     robust.dat[,8] <- round(100*as.numeric(robust.dat[,8]),1)
+    robust.dat <- robust.dat[,-3]
     return(robust.dat)
 }
 
