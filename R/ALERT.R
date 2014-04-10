@@ -104,8 +104,8 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
                 "max.pct.cases.captured",
                 "pct.peaks.captured",
                 "pct.ext.peaks.captured",
-                "median.low.weeks.incl")
-    if(!is.null(target.pct)) cnames <- c(cnames, "median.duration.diff")
+                "mean.low.weeks.incl")
+    if(!is.null(target.pct)) cnames <- c(cnames, "mean.duration.diff")
     out <- matrix(NA, nrow=length(thresholds), ncol=length(cnames))
     colnames(out) <- cnames
     details <- vector("list", length(thresholds))
@@ -127,8 +127,8 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
         out[i,"max.pct.cases.captured"] <- round(100*max(tmp[,"ALERT.cases.pct"], na.rm=TRUE),1) ## max % of cases captured
         out[i,"pct.peaks.captured"] <- round(100*sum(tmp[,"peak.captured"])/nrow(tmp),1) ## % of times peak captured
         out[i,"pct.ext.peaks.captured"] <- round(100*sum(tmp[,"peak.ext.captured"])/nrow(tmp),1) ## % of times peak +/- k weeks captured
-        out[i,"median.low.weeks.incl"] <- median(tmp[,"low.weeks.incl"], na.rm=TRUE)
-        if(!is.null(target.pct)) out[i,"median.duration.diff"] <- median(tmp[,"duration.diff"], na.rm=TRUE)
+        out[i,"mean.low.weeks.incl"] <- mean(tmp[,"low.weeks.incl"], na.rm=TRUE)
+        if(!is.null(target.pct)) out[i,"mean.duration.diff"] <- mean(tmp[,"duration.diff"], na.rm=TRUE)
     }
     return(list(out=out, details=details))
 }
@@ -367,8 +367,8 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
              round(median(eval.dat$ALERT.cases.pct),3), 
              round(mean(eval.dat$peak.captured),3), 
              round(mean(eval.dat$peak.ext.captured),3), 
-             round(median(eval.dat$low.weeks.incl),1), 
-             round(median(eval.dat$duration.diff),1))
+             round(mean(eval.dat$low.weeks.incl),1), 
+             round(mean(eval.dat$duration.diff),1))
     eval.dat <- rbind.data.frame(eval.dat, bbb)
     return(eval.dat)
 }
