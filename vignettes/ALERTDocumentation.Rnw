@@ -25,11 +25,11 @@
 \clearpage
 
 \section{Introduction to the ALERT algorithm}
-In this document we examine and describe the utility of the ``Above Local Elevated Respiratory illness Threshold'' (ALERT) algorithm in prospectively determining the start and end to a period of elevated influenza incidence in a community. This algorithm could provide a valuable tool to communities, schools, hospitals and other institutions looking for a simple method to objectively define a period when, for example, enhanced patient contact precautions, increased office visits, or other prevention measures should be implemented. The ALERT algorithm is a simple metric that can be easily operationalized and is not meant to be a sophisticated prediction model for influenza. 
+In this document we examine and describe the utility of the ``Above Local Elevated Respiratory illness Threshold'' (ALERT) algorithm in prospectively determining the start and end to a period of elevated influenza incidence in a community. This algorithm could provide a valuable tool to communities, schools, hospitals and other institutions looking for a simple method to objectively define a period when, for example, enhanced patient contact precautions, empiric therapy, or other prevention measures should be implemented. The ALERT algorithm is a simple metric that can be easily operationalized to predict the onset of influenza season. It is not currently designed to generate predictions of case counts. 
 
 The ALERT algorithm uses current and prior flu season information to determine an ALERT threshold. The ALERT period begins when the reported number of laboratory-confirmed cases for a given week exceeds the established ALERT threshold. This serves as the flu season trigger, signaling larger than expected fluctuations. To account for reporting delays and possible delays in implementation of any policies, the user may specify a lag period: a number of days between the reporting date associated with the trigger and the date the ALERT period should be put into effect. The ALERT period ends when the reported number of cases falls below the same threshold, after a minimum passage of eight weeks. (This grace period is chosen by default to be eight weeks but its duration can be modified by the user.) 
 
-The ALERT algorithm can be implemented either via the ALERT R package (\href{https://github.com/nickreich/ALERT}{available on GitHub}) or \href{http://iddynamics.jhsph.edu/apps/shiny/ALERT/}{the ALERT web applet}. The software for the package and the web applet are open-source and made available under the \href{http://www.gnu.org/licenses/old-licenses/gpl-2.0.html}{GNU General Public License, version 2}. 
+The ALERT algorithm can be implemented either via the ALERT R package (\href{https://github.com/nickreich/ALERT}{available on GitHub}), \href{http://iddynamics.jhsph.edu/apps/shiny/ALERT/}{the ALERT web applet}, or an Excel spreadsheet. The software for the package and the web applet are open-source and made available under the \href{http://www.gnu.org/licenses/old-licenses/gpl-2.0.html}{GNU General Public License, version 2}. 
 
 This document describes the ALERT algorithm in detail and provides example R code and output. 
 
@@ -57,7 +57,7 @@ require(ALERT)
 data(fluData)
 @
 
-The {\tt fluData} dataset has a particular format that we assume all ALERT datasets will follow. In particular, it is a {\tt data.frame} with a column named ``Date'' and a column named ``Cases''. These represent the number of cases observed in the week of time defined by the date given. This sample dataset is based on a real dataset, but the counts and dates have been modified upon the request of the data providers. This particular dataset has a total of $\Sexpr{sum(fluData$Cases)}$ cases reported across $\Sexpr{nrow(fluData)}$ weeks. The earliest observation is from $\Sexpr{format(min(fluData$Date), "%m/%d/%Y")}$ and the last observation is from $\Sexpr{format(max(fluData$Date), "%m/%d/%Y")}$. This is what the dataset looks like. (NOTE: lines that begin with \#\# indicate they are ouput from R that would be seen by the user who is having an interactive an R session.)
+The {\tt fluData} dataset has a particular format that we assume all ALERT datasets will follow. In particular, it is a {\tt data.frame} with a column named ``Date'' and a column named ``Cases''. These represent the number of cases observed in the week of time defined by the date given. This sample dataset is based on a real dataset, but the counts and dates have been modified from the original format based upon data sharing agreements with the owners of the data. This particular dataset has a total of $\Sexpr{sum(fluData$Cases)}$ cases reported across $\Sexpr{nrow(fluData)}$ weeks. The earliest observation is from $\Sexpr{format(min(fluData$Date), "%m/%d/%Y")}$ and the last observation is from $\Sexpr{format(max(fluData$Date), "%m/%d/%Y")}$. This is what the dataset looks like. (NOTE: lines that begin with \#\# indicate they are ouput from R that would be seen by the user who is having an interactive an R session.)
 <<dataPeek, fig.height=3.5, fig.width=7>>=
 head(fluData)
 require(ggplot2)
@@ -86,9 +86,9 @@ To define the ALERT period, we use past surveillance data to evaluate the retros
 
 For each threshold considered, the ALERT algorithm summarizes data from previous years as if that threshold had been applied. Say that we have historical data on $N$ seasons. Let $X_{i,t}$ be the percentage of cases captured in the ALERT period for season $i$ ($i$ = 1, ..., $N$) and threshold $t$. Let $D_{i,t}$ be the duration of the ALERT period for season $i$ and threshold $t$. For each threshold $t$ considered, the ALERT algorithm calculates and reports the following metrics:
 \begin{enumerate}
-\item Across all seasons, the median percentage of all influenza cases contained within the ALERT period, $median(X_{i,t}$. 
+\item Across all seasons, the median percentage of all influenza cases contained within the ALERT period, $median(X_{i,t})$. 
 \item The minimum and maximum of $X_{i,t}$, the percentage of all influenza cases contained within the ALERT period.
-\item The median ALERT period duration, $median(D_{i,t}$.
+\item The median ALERT period duration, $median(D_{i,t})$.
 \item The fraction of seasons in which the ALERT period contained the peak week.
 \item The fraction of seasons in which the ALERT period contained the peak week $+/- k$ weeks ($k$ is specified by the user).
 \item The mean number of weeks included in the ALERT period with counts less than the threshold.
@@ -110,7 +110,7 @@ Full details of the usage of the {\tt createALERT()} function can be obtained by
 \item If the {\tt target.pct} option is specified, then {\tt createALERT()} computes the median difference between the duration of the ALERT period in a season and the duration of the shortest period needed to capture {\tt target.pct} of cases for that season.
 \end{itemize}
 
-Table \ref{tab:results} shows slightly reformatted results from the {\tt alert\_summary\$out} object, showing the historical performance of different thresholds. As one example, a user might choose the threshold of 6 because it is the highest threshold that has historically captured at least 85\% half of the time.
+Table \ref{tab:results} shows slightly reformatted results from the {\tt alert\_summary\$out} object, showing the historical performance of different thresholds. As one example, a user might choose the threshold of 6 because it is the highest threshold that has historically captured at least 85\% of the cases half of the time.
 <<table1, echo = FALSE, results='asis', message=FALSE>>=
 require(xtable)
 out <- as.data.frame(alert_summary$out)
@@ -122,7 +122,7 @@ print(xtable(out, caption ="Printed table of the alert\\_summary\\$out object.",
       hline.after=c(0, nrow(out)))
 @
 
-Looking at the historical performance metrics provides a useful snapshot of the performance of different thresholds. In many settings, this may provide enough information to choose a threshold for use in the future. However, the next section provides a more robust validation to determine whether the ALERT algorithm provides robust predictions about the future performance of a given threshold. 
+Looking at the historical performance metrics provides a useful snapshot of the performance of different thresholds. In many settings, this may provide enough information to choose a threshold for use in the future. However, Section \ref{sec:robust} provides a more robust validation to determine whether the ALERT algorithm provides robust predictions about the future performance of a given threshold. 
 
 \section{Applying an ALERT threshold to a single year of data}
 If we know what threshold we would like to use, we can apply it to a year of data to determine how it would have performed on that season of data using the {\tt applyALERT()} function.
@@ -138,14 +138,14 @@ round(alert_applied, 2)
 The {\tt applyALERT()} function shown here is the workhorse function that does most of the calculation for {\tt createALERT()} and {\tt robustALERT()} functions.
 
 
-\section{ALERT algorithm validation}
+\section{ALERT algorithm validation} \label{sec:robust}
 Calculations from the {\tt createALERT()} function that summarize the historical performance of different ALERT thresholds are useful. However taken on their own, it is not clear whether these results may be the used as good predictors of future performance. Therefore, to estimate the performance of the ALERT algorithm in prospective use, we designed and implemented a leave-one-season-out cross-validation analysis. This analysis evaluates whether the historical performance measures are adequate for projecting future performance for a given dataset. 
 
 \subsection{Thresholds are chosen based on rules}
 To perform this ALERT algorithm evaluation and validation, a user must state clearly what criteria they will use to choose a rule. Here are some examples:
 \begin{itemize}
 \item{\em  We are interested in the highest threshold that has historically captured over 85\% of cases.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 6 cases.
-\item {\em We want the lowest threshold that has had a median duration of at most 12 weeks.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 5 cases.
+\item {\em We want the lowest threshold that has had a median duration of no more than 12 weeks.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 5 cases.
 \item {\em We would like the highest threshold that has historically captured the peak and the two weeks on either side at least 80\% of the time.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 4 cases, although this metric appears to be unstable at low thresholds with our data.
 \end{itemize}
 
@@ -184,7 +184,7 @@ print(xtable(alert_eval, caption ="Printed table of the alert\\_eval object.",
 
 
 \subsection{Comparing validation with historical performance}
-We compared the performane of the raw ALERT threshold calculations with the cross-validated metric calculations. These results are shown in Table \ref{tab:compare} for the ``minPercent = 0.85'' and ``maxDuration = 12'' rules. The close similarity in computed metrics between the pairs of raw and validated rows indicate that the metrics calculated on the raw historical data may serve as a robust measure on which to choose ALERT thresholds. If we had observed large differences between the raw and validated measures, then we would have concerns over the validity and robustness of the metrics computed only on historical data. However, these concerns are not supported by the data shown below.
+We compared the performane of the raw ALERT threshold calculations with the cross-validated metric calculations. These results are shown in Table \ref{tab:compare} for the ``minPercent = 0.85'' and ``maxDuration = 12'' rules. The close similarity in computed metrics between the pairs of raw and validated rows indicate that the metrics calculated on the raw historical data may serve as a robust measure on which to choose ALERT thresholds. If we had observed large differences between the raw and validated measures, then we would have concerns over the validity and robustness of the metrics computed only on historical data. However, these concerns are not supported by the data shown below. (Note that the duration difference metric can only be calculated when a target percentage is specified, which is not done for the maximum duration rule.)
 <<compare, echo=FALSE, results='asis', message=FALSE>>=
 idx_r <- c(2, 3, 5, 6, 7, 8, 9) ## columns from alert_eval 
 idx_s <- c(1, 2, 3, 6:9) ## columns from alert_summary$out
