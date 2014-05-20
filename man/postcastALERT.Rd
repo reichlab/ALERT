@@ -2,13 +2,16 @@
 \alias{postcastALERT}
 \title{A component of applyALERT}
 \usage{
-postcastALERT(data, target.pct)
+postcastALERT(data, target.pct, caseColumn = "Cases")
 }
 \arguments{
   \item{data}{a single season of surveillance data}
 
   \item{target.pct}{specifies the percentage of cases the
   user is targeting during the ALERT period}
+
+  \item{caseColumn}{the name of the column with the case
+  counts in it. Defaults to 'Cases'}
 }
 \value{
 A vector with two elements, the \code{pct.captured} and

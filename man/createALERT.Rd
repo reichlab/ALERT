@@ -3,7 +3,8 @@
 \title{Producing the ALERT thresholds table}
 \usage{
 createALERT(data, firstMonth = 9, lag = 7, minWeeks = 8,
-  allThresholds = FALSE, k = 0, target.pct = NULL)
+  allThresholds = FALSE, k = 0, target.pct = NULL, caseColumn = "Cases",
+  lastDate = NULL)
 }
 \arguments{
   \item{data}{the historical data to use in the analysis. A
@@ -28,6 +29,13 @@ createALERT(data, firstMonth = 9, lag = 7, minWeeks = 8,
 
   \item{target.pct}{the percentage of cases the user is
   targeting during the ALERT period (optional)}
+
+  \item{caseColumn}{the name of the column with the case
+  counts in it. Defaults to 'Cases'}
+
+  \item{lastDate}{a string in unambigous date format. All
+  cases after this date will be removed prior to running
+  the createALERT algorithm}
 }
 \value{
 By utilizing the \code{\link{applyALERT}} function,

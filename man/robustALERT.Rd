@@ -4,7 +4,7 @@
 \usage{
 robustALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
   lag = 7, minWeeks = 8, allThresholds = TRUE, k = 0,
-  target.pct = NULL)
+  target.pct = NULL, caseColumn = "Cases")
 }
 \arguments{
   \item{data}{the historical data to use in the analysis. A
@@ -40,6 +40,9 @@ robustALERT(data, minPercent = NULL, maxDuration = NULL, firstMonth = 9,
   \item{target.pct}{can specify the percentage of cases the
   user is targeting during the ALERT period when testing
   maxDuration (optional)}
+
+  \item{caseColumn}{the name of the column with the case
+  counts in it. Defaults to 'Cases'}
 }
 \value{
 A table of the median threshold and ALERT results

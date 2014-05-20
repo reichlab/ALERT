@@ -3,7 +3,7 @@
 \title{Producing seasonal ALERT output}
 \usage{
 applyALERT(data, threshold, k = 0, lag = 7, minWeeks = 8,
-  target.pct = NULL, plot = FALSE)
+  target.pct = NULL, plot = FALSE, caseColumn = "Cases")
 }
 \arguments{
   \item{data}{a single season of surveillance data}
@@ -20,6 +20,9 @@ applyALERT(data, threshold, k = 0, lag = 7, minWeeks = 8,
 
   \item{target.pct}{the percentage of cases the user is
   targeting during the ALERT period (optional)}
+
+  \item{caseColumn}{the name of the column with the case
+  counts in it. Defaults to 'Cases'}
 
   \item{plot}{\code{TRUE}/\code{FALSE}, whether a plot
   should be generated (currently unavailable)}
