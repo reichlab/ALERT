@@ -3,7 +3,7 @@
 \usepackage{multicol}
 
 \title{Supplement for \\ {\em Triggering Interventions for Influenza:  The ALERT Algorithm }}
-\author{Nicholas G Reich, Derek A T Cummings, Stephen A Lauer, Martha Zorn, \\ Christine Robinson, Ann-Christine Nyquist, Lewis J Radonovich, Trish M Perl}
+\author{Nicholas G Reich, Derek A T Cummings, Stephen A Lauer, Martha Zorn, \\ Christine Robinson, Ann-Christine Nyquist, Connie S Price, \\ Michael Simberkoff, Lewis J Radonovich, Trish M Perl}
 
 \usepackage{setspace}
 \onehalfspacing
