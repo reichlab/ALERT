@@ -283,6 +283,7 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
 #'      \item{peak.ext.captured }{1 if peak +/- \code{k} weeks captured, 0 otherwise}
 #'      \item{low.weeks.incl }{the number of weeks included in the ALERT period with counts less than \code{threshold}}
 #'      \item{duration.diff }{if \code{target.pct} specified, the difference between the duration of the ALERT period and the duration of the shortest period needed to capture \code{target.pct} using \code{\link{postcastALERT}}.}
+#' @return Each row in the table represents a season from the data. The final row outputs summary statistics: the median of \code{threshold}, \code{tot.cases}, \code{duration}, \code{ALERT.cases}, and \code{ALERT.cases.pct} and the mean of \code{peak.captured}, \code{peak.ext.captured}, \code{low.weeks.incl}, and \code{duration.diff}.
 #'      
 #' @note %% ~~further notes~~
 #' @author Nicholas G Reich and Stephen A Lauer
@@ -416,15 +417,14 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
 #' @param caseColumn the name of the column with the case counts in it. Defaults to 'Cases'
 #' @return A table of the median threshold and ALERT results determined by each rule with \code{\link{evalALERT}} with the following columns:
 #' \item{rule }{each rule that was specified by the user, either by \code{minPercent} or \code{maxDuration}}
-#'      \item{threshold }{the minimum threshold number of cases needed to begin the ALERT period}
-#'      \item{tot.cases }{total number of cases for the season} 
-#'      \item{duration }{duration of the ALERT period}
-#'      \item{ALERT.cases }{total number of cases in the ALERT period}
-#'      \item{ALERT.cases.pct }{fraction of cases in the ALERT period}
-#'      \item{peak.captured }{1 if peak was captured, 0 otherwise}
-#'      \item{peak.ext.captured }{1 if peak +/- \code{k} weeks captured, 0 otherwise}
-#'      \item{low.weeks.incl }{the number of weeks included in the ALERT period with counts less than \code{threshold}}
-#'      \item{duration.diff }{if \code{target.pct} specified, the difference between the duration of the ALERT period and the duration of the shortest period needed to capture \code{target.pct} using \code{\link{postcastALERT}}.}
+#'      \item{threshold }{the median threshold number of cases needed to begin an ALERT period that can satisfy the rule (as determined by cross-validation)}
+#'      \item{duration }{the median duration of the ALERT period}
+#'      \item{ALERT.cases }{the median number of cases in the ALERT period}
+#'      \item{ALERT.cases.pct }{the median fraction of cases in the ALERT period}
+#'      \item{peak.captured }{the fraction of the time the peak was captured}
+#'      \item{peak.ext.captured }{the fraction of the time the peak +/- \code{k} weeks was captured}
+#'      \item{low.weeks.incl }{the mean number of weeks included in the ALERT period with counts less than \code{threshold}}
+#'      \item{duration.diff }{if \code{target.pct} specified, the mean difference between the duration of the ALERT period and the duration of the shortest period needed to capture \code{target.pct} using \code{\link{postcastALERT}}.}
 #' @note %% ~~further notes~~
 #' @author Nicholas G Reich and Stephen A Lauer
 #' @seealso \code{\link{createALERT}}
@@ -436,7 +436,7 @@ evalALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag
 #' data(fluData)
 #' robustALERT(minPercent=c(.8, .85, .9), maxDuration=c(12, 13, 14), data=fluData, k=2, target.pct=0.85)
 
-robustALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag=7, minWeeks=8, allThresholds=TRUE, k=0, target.pct=NULL, caseColumn='Cases') {
+robustALERT <- function(data, minPercent=NULL, maxDuration=NULL, firstMonth=9, lag=7, minWeeks=8, allThresholds=FALSE, k=0, target.pct=NULL, caseColumn='Cases') {
         ## check for correct column headers
         if( !("Date" %in% colnames(data)))
                 stop("data needs Date columns.")
