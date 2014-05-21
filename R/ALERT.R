@@ -83,7 +83,7 @@ createALERT <- function(data, firstMonth=9, lag=7, minWeeks=8, allThresholds=FAL
                 stop(paste("column named", caseColumn, "not found in data."))
         
         ## subset data if required
-        if(!is.null(subset))
+        if(!is.null(lastDate))
                 data <- subset(data, Date<as.Date(lastDate))
         
         ## create a list where each element of the list contains the indices for rows from that season. 
