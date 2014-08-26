@@ -139,7 +139,7 @@ The {\tt applyALERT()} function shown here is the workhorse function that does m
 
 
 \section{ALERT algorithm validation} \label{sec:robust}
-Calculations from the {\tt createALERT()} function that summarize the historical performance of different ALERT thresholds are useful. However taken on their own, it is not clear whether these results may be the used as good predictors of future performance. Therefore, to estimate the performance of the ALERT algorithm in prospective use, we designed and implemented a leave-one-season-out cross-validation analysis. This analysis evaluates whether the historical performance measures are adequate for projecting future performance for a given dataset. 
+Calculations from the {\tt createALERT()} function that summarize the historical performance of different ALERT thresholds are useful. However taken on their own, it is not clear whether these results may be the used as good predictors of future performance. Therefore, to estimate the performance of the ALERT algorithm in prospective use, we designed and implemented a leave-one-season-out cross-validation analysis (see Section \ref{sec:crossval}). This analysis evaluates whether the historical performance measures are adequate for projecting future performance for a given dataset. 
 
 \subsection{Thresholds are chosen based on rules}
 To perform this ALERT algorithm evaluation and validation, a user must state clearly what criteria they will use to choose a rule. Here are some examples:
@@ -149,7 +149,7 @@ To perform this ALERT algorithm evaluation and validation, a user must state cle
 \item {\em We would like the highest threshold that has historically captured the peak and the two weeks on either side at least 80\% of the time.} \\ Using Table \ref{tab:results}, this would suggest a threshold of 4 cases, although this metric appears to be unstable at low thresholds with our data.
 \end{itemize}
 
-\subsection{Single rule evaluation}
+\subsection{Single rule evaluation}\label{sec:crossval}
 To evaluate a particular rule, the ALERT algorithm uses the {\tt evalALERT()} function, which conducts the following steps for each season $i$:
 \begin{itemize}
 \item Create a dataset that includes all seasons except season $i$. We will refer to the included seasons as the ``training seasons''.
