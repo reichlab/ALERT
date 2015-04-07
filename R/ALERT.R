@@ -232,7 +232,20 @@ applyALERT <- function(data, threshold, k=0, lag=7, minWeeks=8, target.pct=NULL,
         
         ## make 0/1 vector for ALERT period
         onALERT <- rep(0, nrow(data))
-        if(is.na(idxEndDate)) stop("start date occurred too late")
+        if(is.na(idxEndDate)) {
+          cnames <- c("tot.cases",
+                      "duration",
+                      "ALERT.cases",
+                      "ALERT.cases.pct",
+                      "peak.captured",
+                      "peak.ext.captured",
+                      "low.weeks.incl",
+                      "duration.diff")
+          out <- rep(NA, length(cnames))
+          names(out) <- cnames
+          out["tot.cases"] <- sum(data[,caseColumn]) ## total cases for season
+          return(out)
+        }
         onALERT[idxStartDate:idxEndDate] <- 1
         
         ## get peak idx
