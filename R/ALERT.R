@@ -1,4 +1,4 @@
-#' ALERT test data
+#' Awesome ALERT test data
 #' 
 #' Weekly influenza cases from a hospital
 #' 
