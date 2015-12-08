@@ -47,20 +47,20 @@ We demonstrate the use of the ALERT algorithm to evaluate these possible thresho
 
 <<install, eval=FALSE>>=
 install.packages("devtools")
-require("devtools")
-install_github("ALERT", "nickreich")
+devtools::install_github("nickreich/ALERT")
 @
 
 Then, to load the ALERT package and the sample dataset that comes with the package, run the following commands: 
-<<setup, message=FALSE>>=
-require(ALERT)
+<<setup, message=FALSE, warning=FALSE>>=
+library(ALERT)
 data(fluData)
 @
 
 The {\tt fluData} dataset has a particular format that we assume all ALERT datasets will follow. In particular, it is a {\tt data.frame} with a column named ``Date'' and a column named ``Cases''. These represent the number of cases observed in the week of time defined by the date given. This sample dataset is based on a real dataset, but the counts and dates have been modified from the original format based upon data sharing agreements with the owners of the data. This particular dataset has a total of $\Sexpr{sum(fluData$Cases)}$ cases reported across $\Sexpr{nrow(fluData)}$ weeks. The earliest observation is from $\Sexpr{format(min(fluData$Date), "%m/%d/%Y")}$ and the last observation is from $\Sexpr{format(max(fluData$Date), "%m/%d/%Y")}$. This is what the dataset looks like. (NOTE: lines that begin with \#\# indicate they are ouput from R that would be seen by the user who is having an interactive an R session.)
-<<dataPeek, fig.height=3.5, fig.width=7>>=
+<<dataPeek, fig.height=3.5, fig.width=7, warning=FALSE>>=
 head(fluData)
-require(ggplot2)
+library(ggplot2)
+theme_set(theme_bw())
 qplot(x=Date, ymin=0, ymax=Cases, data=fluData, geom="linerange")
 @
 
