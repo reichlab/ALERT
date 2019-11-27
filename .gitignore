@@ -9,3 +9,4 @@ vignettes/ALERTDocumentation.tex
 vignettes/ALERTDocumentation.toc
 vignettes/ALERTDocumentation.log
 vignettes/ALERTDocumentation.synctex.gz
+*.DS_Store
