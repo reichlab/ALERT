@@ -6,19 +6,21 @@ require(ggplot2)
 library(dplyr)
 library(gridExtra)
 
+source("inst/SIM-paper-code/ALERT-simulations-fxns.R")
+
 #real data
 ##load the data
-fluA <- read.csv("~/ALERT-characterization/applied-ALERT-data/CHCO-fluA.csv", 
+fluA <- read.csv("inst/SIM-paper-data/CHCO-fluA.csv", 
                  stringsAsFactors=F)
 fluA$Date <- ymd(fluA$Date)
 fluA <- arrange(fluA, Date)
 
-fluB <- read.csv("~/ALERT-characterization/applied-ALERT-data/CHCO-fluB.csv", 
+fluB <- read.csv("inst/SIM-paper-data/CHCO-fluB.csv", 
                  stringsAsFactors=F)
 fluB$Date <- ymd(fluB$Date)
 fluB <- arrange(fluB, Date)
 
-RSV <- read.csv("~/ALERT-characterization/applied-ALERT-data/CHCO-RSV.csv", 
+RSV <- read.csv("inst/SIM-paper-data/CHCO-RSV.csv", 
                  stringsAsFactors=F)
 RSV$Date <- ymd(RSV$Date)
 RSV <- arrange(RSV, Date)
@@ -33,7 +35,7 @@ fulldata <- data
 
 
 ###get the dates that CHCO actually used
-dates <- read.csv("~/ALERT-characterization/applied-ALERT-data/chco-trigger-dates.csv", stringsAsFactors = F)
+dates <- read.csv("inst/SIM-paper-data/chco-trigger-dates.csv", stringsAsFactors = F)
 dates$startDate <- ymd(dates$startDate)
 dates$endDate <- ymd(dates$endDate)
 
@@ -69,8 +71,9 @@ dens <- ggplot(data=filter(data, Cases>0),
         axis.title.y=element_blank()) +
   labs(y = "Density") 
 
+pdf(file="inst/SIM-paper-code/fig1-historical-data.pdf", width=7, height=4)
 grid.arrange(rawdat, dens, ncol=2, left="Incidence")
-
+dev.off()
 
 #######################################################
 ###### ALERT THRESHOLD COMPARISON FIGURE  #############
@@ -297,6 +300,9 @@ annotate("text", x = as.Date("2004-10-05"), y = -21, label = "21", size=3) +
   geom_vline(xintercept=as.Date("2008-07-26"), linetype="dashed", 
                  alpha=0.5, show.legend = FALSE )
 
+pdf(file="inst/SIM-paper-code/fig2-alert-periods.pdf", width=7, height=4)
 threstrig
+dev.off()
+
 
 
